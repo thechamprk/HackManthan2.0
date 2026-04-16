@@ -1,4 +1,4 @@
-# HindsightHub - AI Support Agent with Persistent Memory
+# Hindsight Expert - AI Support Agent with Persistent Memory
 
 HindsightHub is a hackathon project that combines:
 - Hindsight Cloud for persistent memory of support interactions
