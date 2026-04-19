@@ -1,118 +1,126 @@
-import React, { useState, useRef, useEffect } from 'react';
-import styles from '../styles/ChatInterface.module.css';
-import MessageItem from './MessageItem';
-import LoadingSpinner from './LoadingSpinner';
+import { useMemo, useRef, useState } from 'react';
+import MemoryContext from './MemoryContext';
 import { support } from '../utils/api';
 
-export default function ChatInterface() {
-  const [customerId, setCustomerId] = useState('user_' + Math.random().toString(36).substr(2, 9));
+function formatTime(isoDate) {
+  return new Date(isoDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function ChatInterface({ customerId }) {
+  const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
-  const [inputMessage, setInputMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const messagesEndRef = useRef(null);
+  const [loading, setLoading] = useState(false);
+  const [lastMetadata, setLastMetadata] = useState(null);
+  const messageEndRef = useRef(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const conversationContext = useMemo(
+    () =>
+      messages.map((m) => ({
+        role: m.role === 'agent' ? 'assistant' : 'user',
+        content: m.content
+      })),
+    [messages]
+  );
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const handleSendMessage = async () => {
-    if (!inputMessage.trim()) return;
+  async function sendSupportMessage(content) {
+    if (!content?.trim() || loading) return;
 
     const userMessage = {
-      id: Date.now(),
-      text: inputMessage,
-      isUser: true,
+      id: `u_${Date.now()}`,
+      role: 'user',
+      content: content.trim(),
       timestamp: new Date().toISOString()
     };
 
-    setMessages(prev => [...prev, userMessage]);
-    setInputMessage('');
-    setIsLoading(true);
-    setError(null);
+    const nextContext = [...conversationContext, { role: 'user', content: userMessage.content }];
+    setMessages((prev) => [...prev, userMessage]);
+    setMessage('');
+    setLoading(true);
 
     try {
-      const response = await support.sendMessage(customerId, inputMessage, []);
-      const payload = response?.data || response;
+      const payload = await support.sendMessage(customerId, userMessage.content, nextContext);
+      if (!payload?.success) throw new Error(payload?.error?.message || 'Failed');
 
-      const agentMessage = {
-        id: Date.now() + 1,
-        text: payload.agent_response,
-        isUser: false,
-        timestamp: new Date().toISOString(),
-        metadata: {
-          confidence: payload.confidence_score,
-          similarCases: payload.similar_past_cases,
-          patterns: payload.hindsight_memory_used?.patterns_applied || []
+      const data = payload.data;
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: data.interaction_id || `a_${Date.now()}`,
+          role: 'agent',
+          content: data.agent_response || 'No response',
+          timestamp: new Date().toISOString(),
+          provider: data.provider || 'agent',
+          confidence: Number(data.confidence_score ?? 0)
         }
-      };
-
-      setMessages(prev => [...prev, agentMessage]);
-    } catch (err) {
-      setError(err.message || 'Failed to send message');
-      console.error('Error sending message:', err);
+      ]);
+      setLastMetadata(data);
+    } catch (error) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `e_${Date.now()}`,
+          role: 'agent',
+          content: `Error: ${error.message}`,
+          timestamp: new Date().toISOString(),
+          provider: 'system',
+          confidence: 0
+        }
+      ]);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
+      setTimeout(() => messageEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
     }
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
+  }
 
   return (
-    <div className={styles['chat-interface']}>
-      <div className={styles['chat-header']}>
-        <h2>Support Chat</h2>
-        <div className={styles['customer-info']}>
-          <small>Customer ID: {customerId}</small>
+    <section className="chat-grid">
+      <div className="chat-card">
+        <header className="chat-title">
+          <h2>Support Assistant</h2>
+          <span className="customer-pill">ID: {customerId}</span>
+        </header>
+
+        <div className="chat-body">
+          {messages.length === 0 && <p className="muted">Start by asking your support question.</p>}
+
+          {messages.map((m) => (
+            <article key={m.id} className={`bubble ${m.role === 'user' ? 'bubble-user' : 'bubble-agent'}`}>
+              <p>{m.content}</p>
+              <small>
+                {m.role === 'user' ? 'You' : 'Agent'} · {formatTime(m.timestamp)}
+              </small>
+            </article>
+          ))}
+
+          {loading && (
+            <div className="bubble bubble-agent">
+              Agent is typing<span className="dot">.</span><span className="dot">.</span><span className="dot">.</span>
+            </div>
+          )}
+          <div ref={messageEndRef} />
         </div>
-      </div>
 
-      <div className={styles['messages-container']}>
-        {messages.length === 0 ? (
-          <div className={styles['empty-state']}>
-            <h3>👋 Welcome to Hindsight Expert</h3>
-            <p>Ask any support question and watch as the AI learns from past interactions</p>
-          </div>
-        ) : (
-          messages.map(msg => (
-            <MessageItem key={msg.id} message={msg} isUser={msg.isUser} />
-          ))
-        )}
-        {isLoading && <LoadingSpinner message="Agent is thinking..." />}
-        {error && (
-          <div className={styles['error-message']}>
-            <strong>Error:</strong> {error}
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
-
-      <div className={styles['input-section']}>
-        <textarea
-          value={inputMessage}
-          onChange={(e) => setInputMessage(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="Type your support question..."
-          disabled={isLoading}
-          rows="3"
-        />
-        <button
-          onClick={handleSendMessage}
-          disabled={isLoading || !inputMessage.trim()}
-          className={styles['send-button']}
+        <form
+          className="chat-input-row"
+          onSubmit={(e) => {
+            e.preventDefault();
+            sendSupportMessage(message);
+          }}
         >
-          {isLoading ? '⏳ Sending...' : '📤 Send'}
-        </button>
+          <input
+            placeholder="Describe your issue..."
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+          />
+          <button className="btn-primary" type="submit" disabled={loading}>
+            Send
+          </button>
+        </form>
       </div>
-    </div>
+
+      <MemoryContext memory={lastMetadata?.hindsight_memory_used} />
+    </section>
   );
 }
+
+export default ChatInterface;
