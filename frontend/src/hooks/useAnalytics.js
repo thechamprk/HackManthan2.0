@@ -11,7 +11,7 @@ export const useAnalytics = () => {
     try {
       setIsLoading(true);
       const response = await analytics.getDashboard();
-      setDashboard(response.data);
+      setDashboard(response?.data || response);
       setError(null);
     } catch (err) {
       setError(err.message);
@@ -25,7 +25,7 @@ export const useAnalytics = () => {
     try {
       setIsLoading(true);
       const response = await analytics.getMetrics();
-      setMetrics(response.data);
+      setMetrics(response?.data || response);
       setError(null);
     } catch (err) {
       setError(err.message);

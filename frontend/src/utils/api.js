@@ -1,4 +1,15 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { API_URL, REQUEST_TIMEOUT_MS } from './constants';
+
+const fetchWithTimeout = async (url, options = {}) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
 
 const handleResponse = async (response) => {
   if (!response.ok) {
@@ -10,7 +21,7 @@ const handleResponse = async (response) => {
 
 export const support = {
   sendMessage: async (customerId, message, context = []) => {
-    const response = await fetch(`${API_URL}/api/support`, {
+    const response = await fetchWithTimeout(`${API_URL}/api/support`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -25,11 +36,11 @@ export const support = {
 
 export const analytics = {
   getDashboard: async () => {
-    const response = await fetch(`${API_URL}/api/analytics/dashboard`);
+    const response = await fetchWithTimeout(`${API_URL}/api/analytics/dashboard`);
     return handleResponse(response);
   },
   getMetrics: async () => {
-    const response = await fetch(`${API_URL}/api/analytics/metrics`);
+    const response = await fetchWithTimeout(`${API_URL}/api/analytics/metrics`);
     return handleResponse(response);
   }
 };

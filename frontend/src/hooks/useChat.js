@@ -24,7 +24,11 @@ export const useChat = () => {
       setError(null);
 
       try {
-        const response = await support.sendMessage(customerId, text, []);
+        const context = messages.map((message) => ({
+          role: message.isUser ? 'user' : 'assistant',
+          content: message.text
+        }));
+        const response = await support.sendMessage(customerId, text, context);
 
         const payload = response?.data || response;
 
@@ -49,7 +53,7 @@ export const useChat = () => {
         setLoading(false);
       }
     },
-    [customerId, addMessage, setLoading, setError, setMemoryContext]
+    [customerId, messages, addMessage, setLoading, setError, setMemoryContext]
   );
 
   return {
