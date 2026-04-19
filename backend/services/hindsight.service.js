@@ -1,10 +1,10 @@
 const NodeCache = require('node-cache');
-const { createHindsightClient } = require('../config/hindsight');
+const { getHindsightInstance } = require('../config/hindsight');
 const { interactionSchema } = require('../models/interaction.model');
 const { logger } = require('../middleware/logger');
-const { HINDSIGHT_CONTEXT_ID } = require('../utils/constants');
+const { HINDSIGHT_CONTEXT_ID, MAX_SIMILAR_CASES } = require('../utils/constants');
 
-const hindsight = createHindsightClient();
+const hindsight = getHindsightInstance();
 const memoryCache = new NodeCache({ stdTTL: 60, checkperiod: 120 });
 const CONTEXT_ID = HINDSIGHT_CONTEXT_ID;
 
@@ -120,7 +120,7 @@ async function storeInteraction(data) {
  * @param {number} limit
  * @returns {Promise<Array<object>>}
  */
-async function retrieve(query, limit = 5) {
+async function retrieve(query, limit = MAX_SIMILAR_CASES) {
   const cacheKey = `retrieve:${query}:${limit}`;
   const cached = memoryCache.get(cacheKey);
 
@@ -196,11 +196,40 @@ async function listInteractions(filters = {}) {
   });
 }
 
+async function getMetrics() {
+  const interactions = await listInteractions({ limit: 500 });
+
+  const totals = interactions.reduce(
+    (acc, item) => {
+      acc.total_interactions += 1;
+      acc.total_effectiveness += Number(item.effectiveness_score) || 0;
+      const issueType = item.issue_type || 'general_support';
+      acc.by_issue_type[issueType] = (acc.by_issue_type[issueType] || 0) + 1;
+      return acc;
+    },
+    {
+      total_interactions: 0,
+      total_effectiveness: 0,
+      by_issue_type: {}
+    }
+  );
+
+  return {
+    total_interactions: totals.total_interactions,
+    average_effectiveness:
+      totals.total_interactions > 0
+        ? Number((totals.total_effectiveness / totals.total_interactions).toFixed(2))
+        : 0,
+    by_issue_type: totals.by_issue_type
+  };
+}
+
 module.exports = {
   storeInteraction,
   retrieve,
   updateEffectiveness,
   listInteractions,
+  getMetrics,
   normalizeIssueType,
   buildTags
 };

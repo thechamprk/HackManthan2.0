@@ -54,6 +54,24 @@ function calculateDashboardMetrics(interactions = []) {
   };
 }
 
+function getDashboardMetrics(interactions = []) {
+  return calculateDashboardMetrics(interactions);
+}
+
+function getEffectivenessByCategory(interactions = []) {
+  return calculateDashboardMetrics(interactions).effectiveness_by_category;
+}
+
+function calculateTrends(interactions = []) {
+  return {
+    learning_trend: calculateDashboardMetrics(interactions).learning_trend
+  };
+}
+
+function getMostEffectiveSolutions(interactions = []) {
+  return calculateDetailedMetrics(interactions).most_effective_solutions;
+}
+
 function calculateDetailedMetrics(interactions = []) {
   const dashboard = calculateDashboardMetrics(interactions);
 
@@ -106,6 +124,10 @@ function calculateDetailedMetrics(interactions = []) {
 }
 
 module.exports = {
+  getDashboardMetrics,
+  getEffectivenessByCategory,
+  calculateTrends,
+  getMostEffectiveSolutions,
   calculateDashboardMetrics,
   calculateDetailedMetrics
 };

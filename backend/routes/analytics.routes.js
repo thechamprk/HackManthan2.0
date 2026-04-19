@@ -2,7 +2,7 @@ const express = require('express');
 const { z } = require('zod');
 const { listInteractions } = require('../services/hindsight.service');
 const {
-  calculateDashboardMetrics,
+  getDashboardMetrics,
   calculateDetailedMetrics
 } = require('../services/analytics.service');
 const { validateQuery } = require('../middleware/validator');
@@ -20,7 +20,7 @@ const interactionsQuerySchema = z.object({
 router.get('/dashboard', async (req, res, next) => {
   try {
     const interactions = await listInteractions({ limit: 500 });
-    const metrics = calculateDashboardMetrics(interactions);
+    const metrics = getDashboardMetrics(interactions);
 
     res.status(HTTP_STATUS.OK).json(successResponse(metrics));
   } catch (error) {

@@ -25,4 +25,21 @@ export async function request(path, options = {}) {
   return response.data;
 }
 
+export const support = {
+  sendMessage: async (customerId, message, context = []) =>
+    request('/api/support', {
+      method: 'POST',
+      data: {
+        customer_id: customerId,
+        message,
+        conversation_context: context
+      }
+    })
+};
+
+export const analytics = {
+  getDashboard: async () => request('/api/analytics/dashboard'),
+  getMetrics: async () => request('/api/analytics/metrics')
+};
+
 export default api;

@@ -10,11 +10,7 @@ class ErrorBoundary extends Component {
     return { hasError: true, message: error?.message || 'Unknown UI error' };
   }
 
-  componentDidCatch(error, errorInfo) {
-    if (import.meta.env.DEV) {
-      console.error('[ErrorBoundary] UI crash', error, errorInfo);
-    }
-  }
+  componentDidCatch() {}
 
   render() {
     if (this.state.hasError) {

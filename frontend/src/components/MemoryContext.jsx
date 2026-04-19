@@ -1,6 +1,7 @@
-function MemoryContext({ memory = { retrieved_cases: [], patterns_applied: [] } }) {
-  const cases = memory?.retrieved_cases || [];
-  const patterns = memory?.patterns_applied || [];
+function MemoryContext({ memory, data }) {
+  const source = memory || data || { retrieved_cases: [], patterns_applied: [] };
+  const cases = source?.retrieved_cases || [];
+  const patterns = source?.patterns_applied || [];
 
   return (
     <aside className="memory-card">
@@ -25,6 +26,9 @@ function MemoryContext({ memory = { retrieved_cases: [], patterns_applied: [] } 
             <div key={`${c.interaction_id || i}_${i}`} className="case-card">
               <strong>Case {i + 1}</strong>
               <p>{c.agent_response || 'No summary available'}</p>
+              {typeof c.effectiveness_score === 'number' ? (
+                <small>Effectiveness: {(c.effectiveness_score * 100).toFixed(0)}%</small>
+              ) : null}
             </div>
           ))
         ) : (

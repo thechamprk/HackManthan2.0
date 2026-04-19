@@ -1,17 +1,32 @@
 const DEFAULT_TIMEOUT_MS = 8000;
 const { logger } = require('../middleware/logger');
+let hindsightClient = null;
 
-function createHindsightClient() {
+try {
+  // Optional dependency support if @hindsight-ai/sdk is available.
+  // eslint-disable-next-line global-require
+  hindsightClient = require('@hindsight-ai/sdk');
+} catch (_error) {
+  hindsightClient = null;
+}
+
+let hindsightInstance;
+
+function createFallbackClient() {
+  return {
+    store: async (_payload) => ({ id: `mock_${Date.now()}`, source: 'fallback' }),
+    retrieve: async () => ({ results: [], source: 'fallback' }),
+    update: async ({ id }) => ({ id, source: 'fallback' })
+  };
+}
+
+function buildHttpClient() {
   const apiKey = process.env.HINDSIGHT_API_KEY;
   const bankId = process.env.HINDSIGHT_INSTANCE_ID || 'hackmanthan';
 
   if (!apiKey) {
     logger.warn('Missing HINDSIGHT_API_KEY. Using no-op fallback mode.');
-    return {
-      store: async (_payload) => ({ id: `mock_${Date.now()}`, source: 'fallback' }),
-      retrieve: async () => ({ results: [], source: 'fallback' }),
-      update: async ({ id }) => ({ id, source: 'fallback' })
-    };
+    return createFallbackClient();
   }
 
   const baseUrl = 'https://api.hindsight.vectorize.io';
@@ -58,4 +73,29 @@ function createHindsightClient() {
   };
 }
 
-module.exports = { createHindsightClient };
+function initializeHindsight() {
+  if (hindsightInstance) {
+    return hindsightInstance;
+  }
+
+  if (hindsightClient && typeof hindsightClient.createClient === 'function') {
+    hindsightInstance = hindsightClient.createClient({
+      apiKey: process.env.HINDSIGHT_API_KEY,
+      instanceId: process.env.HINDSIGHT_INSTANCE_ID
+    });
+    return hindsightInstance;
+  }
+
+  hindsightInstance = buildHttpClient();
+  return hindsightInstance;
+}
+
+function getHindsightInstance() {
+  return hindsightInstance || initializeHindsight();
+}
+
+module.exports = {
+  initializeHindsight,
+  getHindsightInstance,
+  createHindsightClient: initializeHindsight
+};

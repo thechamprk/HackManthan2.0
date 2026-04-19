@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { request } from '../utils/api';
+import { analytics, request } from '../utils/api';
 import { ANALYTICS_INTERACTIONS_LIMIT } from '../utils/constants';
 
 export function useAnalytics() {
   const [dashboard, setDashboard] = useState(null);
   const [interactions, setInteractions] = useState([]);
+  const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -13,13 +14,15 @@ export function useAnalytics() {
 
     async function fetchMetrics() {
       try {
-        const [dashboardPayload, interactionsPayload] = await Promise.all([
-          request('/api/analytics/dashboard'),
+        const [dashboardPayload, metricsPayload, interactionsPayload] = await Promise.all([
+          analytics.getDashboard(),
+          analytics.getMetrics(),
           request(`/api/analytics/interactions?limit=${ANALYTICS_INTERACTIONS_LIMIT}`)
         ]);
 
         if (active) {
           setDashboard(dashboardPayload.data);
+          setMetrics(metricsPayload.data);
           setInteractions(interactionsPayload.data || []);
           setError('');
         }
@@ -59,9 +62,16 @@ export function useAnalytics() {
 
   return {
     dashboard,
+    metrics,
     interactions,
     chartData,
+    isLoading: loading,
     loading,
-    error
+    error,
+    fetchDashboard: async () => {
+      const payload = await analytics.getDashboard();
+      setDashboard(payload.data);
+      return payload.data;
+    }
   };
 }

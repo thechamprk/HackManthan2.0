@@ -2,16 +2,27 @@ const Groq = require('groq-sdk');
 const { logger } = require('../middleware/logger');
 
 const DEFAULT_MAX_RETRIES = 3;
+let groqInstance;
 
-function createGroqClient() {
+function initializeGroq() {
+  if (groqInstance) {
+    return groqInstance;
+  }
+
   const apiKey = process.env.GROQ_API_KEY;
 
   if (!apiKey) {
     logger.warn('GROQ_API_KEY missing, running in fallback mode');
-    return null;
+    groqInstance = null;
+    return groqInstance;
   }
 
-  return new Groq({ apiKey });
+  groqInstance = new Groq({ apiKey });
+  return groqInstance;
+}
+
+function getGroqInstance() {
+  return groqInstance || initializeGroq();
 }
 
 async function withGroqRetry(action, maxRetries = DEFAULT_MAX_RETRIES) {
@@ -36,6 +47,8 @@ async function withGroqRetry(action, maxRetries = DEFAULT_MAX_RETRIES) {
 }
 
 module.exports = {
-  createGroqClient,
+  initializeGroq,
+  getGroqInstance,
+  createGroqClient: initializeGroq,
   withGroqRetry
 };
