@@ -60,6 +60,7 @@ function Todo() {
 
   async function saveToTasks() {
     const pending = items.filter((item) => item.text.trim().length > 0);
+    const defaultDueDate = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
     await Promise.all(
       pending.map((item) =>
         tasksApi.create({
@@ -68,7 +69,7 @@ function Todo() {
           priority: item.priority,
           estimatedMinutes: item.estimatedMinutes,
           done: item.done,
-          dueDate: new Date().toISOString()
+          dueDate: defaultDueDate
         })
       )
     );

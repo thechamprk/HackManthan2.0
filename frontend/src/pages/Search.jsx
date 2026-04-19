@@ -10,10 +10,11 @@ function Search() {
   const [results, setResults] = useState([]);
   const [summary, setSummary] = useState('');
   const [recent, setRecent] = useState(() => {
+    const stored = localStorage.getItem('insights_recent_searches') || '[]';
     try {
-      return JSON.parse(localStorage.getItem('insights_recent_searches') || '[]');
+      return JSON.parse(stored);
     } catch (error) {
-      console.warn('Failed to parse recent searches', error);
+      console.warn('Failed to parse recent searches from localStorage', { stored, error });
       return [];
     }
   });

@@ -6,6 +6,7 @@ const { successResponse } = require('../utils/response');
 const { GROQ_MODEL } = require('../utils/constants');
 
 const router = express.Router();
+const GRANTS_SUGGESTION_COUNT = 4;
 
 const breakdownSchema = z.object({
   goal: z.string().trim().min(1)
@@ -121,11 +122,14 @@ router.post('/grants', async (req, res) => {
     const parsed = grantsSchema.parse(req.body || {});
 
     const data = await runJsonArrayPrompt(
-      'Suggest exactly 4 startup grants based on the user profile. Return ONLY JSON array: [{"name":"","organization":"","amount":"","deadline":"YYYY-MM-DD","matchPercent":80,"description":""}]',
+      `Suggest exactly ${GRANTS_SUGGESTION_COUNT} startup grants based on the user profile. Return ONLY JSON array: [{"name":"","organization":"","amount":"","deadline":"YYYY-MM-DD","matchPercent":80,"description":""}]`,
       `Profile description: ${parsed.description}`
     );
 
-    const normalized = (data && data.length ? data.slice(0, 4) : grantsDataset.slice(0, 4)).map((item) => ({
+    const normalized = (data && data.length
+      ? data.slice(0, GRANTS_SUGGESTION_COUNT)
+      : grantsDataset.slice(0, GRANTS_SUGGESTION_COUNT)
+    ).map((item) => ({
       name: String(item.name || 'Grant Opportunity').trim(),
       organization: String(item.organization || 'Funding Org').trim(),
       amount: String(item.amount || 'TBD').trim(),
