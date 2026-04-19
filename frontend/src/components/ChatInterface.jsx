@@ -69,12 +69,13 @@ function ChatInterface({ customerId }) {
       ]);
       setLastMetadata(data);
     } catch (error) {
+      console.error('Failed to send support message:', error);
       setMessages((prev) => [
         ...prev,
         {
           id: `e_${Date.now()}`,
           role: 'agent',
-          content: `Error: ${error.message}`,
+          content: 'We encountered an issue processing your request. Please try again.',
           timestamp: new Date().toISOString(),
           provider: 'system',
           confidence: 0
