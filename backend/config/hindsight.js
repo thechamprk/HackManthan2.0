@@ -7,6 +7,7 @@ try {
   // eslint-disable-next-line global-require
   hindsightClient = require('@hindsight-ai/sdk');
 } catch (_error) {
+  logger.debug('Optional @hindsight-ai/sdk not installed, using HTTP/fallback client');
   hindsightClient = null;
 }
 

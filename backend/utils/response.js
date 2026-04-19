@@ -7,14 +7,7 @@ function successResponse(data, meta) {
   };
 }
 
-function errorResponse(message, detailsOrStatusCode, explicitStatusCode) {
-  const details =
-    typeof detailsOrStatusCode === 'object' && detailsOrStatusCode !== null
-      ? detailsOrStatusCode
-      : undefined;
-  const statusCode =
-    typeof detailsOrStatusCode === 'number' ? detailsOrStatusCode : explicitStatusCode;
-
+function errorResponse(message, details, statusCode) {
   return {
     success: false,
     statusCode: statusCode || undefined,

@@ -71,6 +71,7 @@ function ChatInterface({ customerId = '', onMemoryUpdate }) {
       </div>
 
       {error ? <p className="mb-2 text-sm text-rose-300">{error}</p> : null}
+      {!activeCustomerId ? <p className="mb-2 text-sm text-amber-300">Enter a customer ID to enable sending.</p> : null}
 
       <form className="flex gap-2" onSubmit={onSubmit}>
         <textarea

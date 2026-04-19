@@ -1,5 +1,5 @@
-function MemoryContext({ memory, data }) {
-  const source = memory || data || { retrieved_cases: [], patterns_applied: [] };
+function MemoryContext({ memory }) {
+  const source = memory || { retrieved_cases: [], patterns_applied: [] };
   const cases = source?.retrieved_cases || [];
   const patterns = source?.patterns_applied || [];
 

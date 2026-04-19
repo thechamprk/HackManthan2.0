@@ -53,6 +53,7 @@ export function useChat(customerId) {
       })),
     [messages]
   );
+  const visibleMessages = useMemo(() => messages.slice(-CHAT_MESSAGES_LIMIT), [messages]);
 
   async function sendSupportMessage(content) {
     if (!content.trim() || loading) return;
@@ -118,9 +119,8 @@ export function useChat(customerId) {
   }
 
   return {
-    messages: messages.slice(-CHAT_MESSAGES_LIMIT),
+    messages: visibleMessages,
     isLoading: isLoading || loading,
-    loading: isLoading || loading,
     error,
     memory,
     lastMetadata,
