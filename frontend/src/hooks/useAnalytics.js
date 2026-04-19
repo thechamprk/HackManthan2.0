@@ -21,7 +21,7 @@ export const useAnalytics = () => {
     }
   }, []);
 
-  const fetchMetrics = async () => {
+  const fetchMetrics = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await analytics.getMetrics();
@@ -33,7 +33,7 @@ export const useAnalytics = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchDashboard();

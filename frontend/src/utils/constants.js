@@ -1,4 +1,4 @@
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+export const API_URL = import.meta.env.VITE_API_URL || import.meta.env.REACT_APP_API_URL || 'http://localhost:3000';
 
 export const CHAT_MESSAGES_LIMIT = 100;
 export const REQUEST_TIMEOUT_MS = 30000;
