@@ -28,8 +28,32 @@ function buildTags(message = '') {
     .slice(0, 8);
 }
 
+function normalizeInteractionRecord(item = {}) {
+  const messageSource = item.customer_message || item.text || '';
+  const responseSource = item.agent_response || item.summary || '';
+  const derivedIssue = item.issue_type || normalizeIssueType(messageSource);
+
+  return {
+    interaction_id: item.interaction_id || item.id || `derived_${Date.now()}`,
+    customer_id: item.customer_id || item.user_id || 'unknown_customer',
+    issue_type: derivedIssue || 'general_support',
+    customer_message: messageSource,
+    agent_response: responseSource,
+    confidence_score: typeof item.confidence_score === 'number' ? item.confidence_score : 0,
+    effectiveness_score: typeof item.effectiveness_score === 'number' ? item.effectiveness_score : 0,
+    timestamp: item.timestamp || item.mentioned_at || new Date().toISOString(),
+    tags: Array.isArray(item.tags) ? item.tags : buildTags(messageSource),
+    metadata: item.metadata || {}
+  };
+}
+
 async function withRetry(action, maxRetries = 2) {
   let attempt = 0;
+
+  function isKnownInfraCapacityError(error) {
+    const text = String(error?.message || '').toLowerCase();
+    return text.includes('out of shared memory') || text.includes('max_locks_per_transaction');
+  }
 
   while (true) {
     try {
@@ -37,7 +61,9 @@ async function withRetry(action, maxRetries = 2) {
     } catch (error) {
       attempt += 1;
       const canRetry = attempt <= maxRetries;
-      const retryable = !error.statusCode || error.statusCode >= 500 || error.name === 'AbortError';
+      const retryable =
+        (!error.statusCode || error.statusCode >= 500 || error.name === 'AbortError') &&
+        !isKnownInfraCapacityError(error);
 
       if (!canRetry || !retryable) {
         throw error;
@@ -70,17 +96,22 @@ async function storeInteraction(data) {
     data: enrichedData
   };
 
-  const stored = await withRetry(() => hindsight.store(payload));
+  try {
+    const stored = await withRetry(() => hindsight.store(payload));
 
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('[HindsightService] Stored interaction', {
-      interaction_id: enrichedData.interaction_id,
-      issue_type: enrichedData.issue_type
-    });
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[HindsightService] Stored interaction', {
+        interaction_id: enrichedData.interaction_id,
+        issue_type: enrichedData.issue_type
+      });
+    }
+
+    memoryCache.del(`analytics:all`);
+    return stored;
+  } catch (err) {
+    console.warn('[HindsightService] store failed, continuing without memory:', err.message);
+    return { id: enrichedData.interaction_id || `mock_${Date.now()}`, source: 'fallback' };
   }
-
-  memoryCache.del(`analytics:all`);
-  return stored;
 }
 
 /**
@@ -97,20 +128,25 @@ async function retrieve(query, limit = 5) {
     return cached;
   }
 
-  const results = await withRetry(() =>
-    hindsight.retrieve({
-      query,
-      context_id: CONTEXT_ID,
-      limit
-    })
-  );
+  try {
+    const results = await withRetry(() =>
+      hindsight.retrieve({
+        query,
+        context_id: CONTEXT_ID,
+        limit
+      })
+    );
 
-  const normalizedResults = Array.isArray(results?.results)
-    ? results.results.map((entry) => entry.data || entry)
-    : [];
+    const normalizedResults = Array.isArray(results?.results)
+      ? results.results.map((entry) => entry.data || entry)
+      : [];
 
-  memoryCache.set(cacheKey, normalizedResults, 30);
-  return normalizedResults;
+    memoryCache.set(cacheKey, normalizedResults, 30);
+    return normalizedResults;
+  } catch (err) {
+    console.warn('[HindsightService] recall failed, continuing without memory:', err.message);
+    return [];
+  }
 }
 
 /**
@@ -151,7 +187,7 @@ async function listInteractions(filters = {}) {
   const limit = Number(filters.limit) || 100;
   const query = filters.query || 'support interaction history';
 
-  const all = await retrieve(query, limit);
+  const all = (await retrieve(query, limit)).map(normalizeInteractionRecord);
 
   return all.filter((item) => {
     if (filters.customer_id && item.customer_id !== filters.customer_id) return false;

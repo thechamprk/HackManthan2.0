@@ -68,8 +68,17 @@ app.use((err, _req, res, _next) => {
 });
 
 if (require.main === module) {
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`[Server] HindsightHub backend listening on port ${PORT}`);
+  });
+
+  server.on('error', (error) => {
+    if (error.code === 'EADDRINUSE') {
+      console.error(`[Server] Port ${PORT} is already in use. Stop the existing server process or change PORT in .env.`);
+      process.exit(0);
+    }
+
+    throw error;
   });
 }
 

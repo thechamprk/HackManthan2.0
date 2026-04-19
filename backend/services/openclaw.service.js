@@ -1,5 +1,5 @@
 const DEFAULT_MODEL = process.env.OPENCLAW_MODEL || 'openclaw';
-const DEFAULT_BASE_URL = process.env.OPENCLAW_BASE_URL || 'http://localhost:3001';
+const DEFAULT_BASE_URL = process.env.OPENCLAW_BASE_URL || process.env.OPENCLAW_URL || 'http://localhost:3001';
 const CHAT_ENDPOINT = process.env.OPENCLAW_CHAT_ENDPOINT || '/v1/chat/completions';
 const MAX_RETRIES = 2;
 
@@ -45,14 +45,6 @@ async function callOpenClaw(messages, options = {}) {
   return response.json();
 }
 
-/**
- * Generates a support response using OpenClaw with an OpenAI-compatible endpoint.
- * @param {string} systemPrompt
- * @param {string} userMessage
- * @param {number} temperature
- * @param {{model?: string}} options
- * @returns {Promise<{content: string, raw: object}>}
- */
 async function generateResponse(systemPrompt, userMessage, temperature = 0.3, options = {}) {
   if (!systemPrompt || !userMessage) {
     throw new Error('systemPrompt and userMessage are required');
