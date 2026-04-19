@@ -4,6 +4,7 @@ const { GROQ_MODEL, GROQ_TIMEOUT_MS } = require('../utils/constants');
 
 const groq = getGroqInstance();
 const MIN_RESPONSE_LENGTH = 2;
+const DEFAULT_TIMEOUT_MS = 15000;
 
 function fallbackResponse(userMessage) {
   return `I am currently experiencing high load. Here is a safe immediate step: please confirm your account email and describe your issue in one sentence. Original request: ${String(userMessage || '').slice(0, 200)}`;
@@ -24,7 +25,7 @@ async function generateResponse(systemPrompt, userMessage, temperature = 0.3, op
 
   const model = options.model || GROQ_MODEL;
   const stream = Boolean(options.stream);
-  const timeoutMs = Number(options.timeoutMs) || GROQ_TIMEOUT_MS;
+  const timeoutMs = Number(options.timeoutMs) || Number(GROQ_TIMEOUT_MS) || DEFAULT_TIMEOUT_MS;
 
   try {
     const completion = await withGroqRetry(async () => {

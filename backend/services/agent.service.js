@@ -1,6 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
 const { retrieve, storeInteraction, normalizeIssueType, buildTags } = require('./hindsight.service');
-const { generateResponse } = require('./groq.service');
+const { generateResponse } = require('./llm.service');
 const { logger } = require('../middleware/logger');
 const { MAX_SIMILAR_CASES } = require('../utils/constants');
 
