@@ -23,7 +23,7 @@ function ChatInterface({ customerId }) {
   );
 
   async function sendSupportMessage(content) {
-    if (!content.trim() || loading) return;
+    if (!content?.trim() || loading) return;
 
     const userMessage = {
       id: `u_${Date.now()}`,

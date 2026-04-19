@@ -9,8 +9,8 @@ function MemoryContext({ memory = { retrieved_cases: [], patterns_applied: [] } 
 
       <div className="pill-wrap">
         {patterns.length ? (
-          patterns.map((p) => (
-            <span key={p} className="pill">
+          patterns.map((p, i) => (
+            <span key={`${p}-${i}`} className="pill">
               {p}
             </span>
           ))
@@ -22,7 +22,7 @@ function MemoryContext({ memory = { retrieved_cases: [], patterns_applied: [] } 
       <div className="case-list">
         {cases.length ? (
           cases.map((c, i) => (
-            <div key={`${c.interaction_id || i}_${i}`} className="case-card">
+            <div key={c.interaction_id || `${c.timestamp || 'case'}-${i}`} className="case-card">
               <strong>Case {i + 1}</strong>
               <p>{c.agent_response || 'No summary available'}</p>
             </div>

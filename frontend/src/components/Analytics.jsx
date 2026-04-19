@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { analytics } from '../utils/api';
 
+const REFRESH_INTERVAL_MS = 30000;
+
 function Analytics() {
   const [data, setData] = useState(null);
 
@@ -11,13 +13,13 @@ function Analytics() {
       try {
         const payload = await analytics.getDashboard();
         if (mounted && payload?.success) setData(payload.data);
-      } catch {
-        // keep simple
+      } catch (error) {
+        console.error('Failed to load analytics', error);
       }
     }
 
     load();
-    const id = setInterval(load, 30000);
+    const id = setInterval(load, REFRESH_INTERVAL_MS);
     return () => {
       mounted = false;
       clearInterval(id);
