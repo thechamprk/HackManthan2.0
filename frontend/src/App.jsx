@@ -1,5 +1,6 @@
-import { Component } from 'react';
+import { Component, useCallback, useEffect, useMemo, useState } from 'react';
 import Home from './pages/Home';
+import Landing from './pages/Landing';
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -32,20 +33,44 @@ class ErrorBoundary extends Component {
 }
 
 function App() {
+  const [route, setRoute] = useState({
+    pathname: window.location.pathname,
+    search: window.location.search
+  });
+
+  useEffect(() => {
+    function syncRoute() {
+      setRoute({
+        pathname: window.location.pathname,
+        search: window.location.search
+      });
+    }
+
+    window.addEventListener('popstate', syncRoute);
+    window.addEventListener('routechange', syncRoute);
+    return () => {
+      window.removeEventListener('popstate', syncRoute);
+      window.removeEventListener('routechange', syncRoute);
+    };
+  }, []);
+
+  const navigate = useCallback((path) => {
+    if (`${window.location.pathname}${window.location.search}` === path) return;
+    window.history.pushState({}, '', path);
+    window.dispatchEvent(new Event('routechange'));
+  }, []);
+
+  const screen = useMemo(() => {
+    if (route.pathname === '/app') {
+      return <Home search={route.search} onNavigate={navigate} />;
+    }
+
+    return <Landing onNavigate={navigate} />;
+  }, [navigate, route.pathname, route.search]);
+
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-app-gradient">
-        <header className="border-b border-slate-200/70 bg-white/70 backdrop-blur">
-          <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 md:px-6 lg:px-8">
-            <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-slate-500">HackManthan Project</p>
-              <h1 className="text-2xl font-black text-slate-900">HindsightHub</h1>
-            </div>
-            <p className="text-sm text-slate-600">AI Support Agent with Persistent Memory</p>
-          </div>
-        </header>
-        <Home />
-      </div>
+      <div className="min-h-screen bg-app-gradient text-white">{screen}</div>
     </ErrorBoundary>
   );
 }

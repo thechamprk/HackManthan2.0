@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 const API_URL = import.meta.env.VITE_API_URL || import.meta.env.REACT_APP_API_URL || 'http://localhost:3000';
 
 function Analytics() {
-  const [metrics, setMetrics] = useState(null);
+  const [dashboard, setDashboard] = useState(null);
+  const [interactions, setInteractions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -13,14 +14,27 @@ function Analytics() {
 
     async function fetchMetrics() {
       try {
-        const response = await fetch(`${API_URL}/api/analytics/metrics`);
-        const payload = await response.json();
+        const [dashboardResponse, interactionsResponse] = await Promise.all([
+          fetch(`${API_URL}/api/analytics/dashboard`),
+          fetch(`${API_URL}/api/analytics/interactions?limit=300`)
+        ]);
 
-        if (!response.ok || !payload.success) {
-          throw new Error(payload?.error?.message || 'Failed to load analytics');
+        const [dashboardPayload, interactionsPayload] = await Promise.all([
+          dashboardResponse.json(),
+          interactionsResponse.json()
+        ]);
+
+        if (!dashboardResponse.ok || !dashboardPayload.success) {
+          throw new Error(dashboardPayload?.error?.message || 'Failed to load analytics');
+        }
+        if (!interactionsResponse.ok || !interactionsPayload.success) {
+          throw new Error(interactionsPayload?.error?.message || 'Failed to load interactions');
         }
 
-        if (active) setMetrics(payload.data);
+        if (active) {
+          setDashboard(dashboardPayload.data);
+          setInteractions(interactionsPayload.data || []);
+        }
       } catch (err) {
         if (active) setError(err.message);
       } finally {
@@ -29,82 +43,80 @@ function Analytics() {
     }
 
     fetchMetrics();
+    const interval = setInterval(fetchMetrics, 30000);
     return () => {
       active = false;
+      clearInterval(interval);
     };
   }, []);
 
-  const chartData = useMemo(() => {
-    if (!metrics?.top_issues) return [];
-    return metrics.top_issues.map((item) => ({
-      issue: item.issue,
-      count: item.count
-    }));
-  }, [metrics]);
+  const chartData = useMemo(
+    () =>
+      interactions.reduce((acc, item) => {
+        const day = new Date(item.timestamp || Date.now()).toLocaleDateString();
+        const existing = acc.find((entry) => entry.day === day);
+        if (existing) {
+          existing.interactions += 1;
+        } else {
+          acc.push({ day, interactions: 1 });
+        }
+        return acc;
+      }, []),
+    [interactions]
+  );
+
+  const activeCustomers = useMemo(() => new Set(interactions.map((item) => item.customer_id)).size, [interactions]);
+  const topIssue = dashboard?.top_issues?.[0]?.issue || 'n/a';
+  const avgConfidence = Number(dashboard?.avg_effectiveness || 0);
 
   if (loading) {
-    return <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft">Loading analytics...</section>;
+    return <section className="glass-card rounded-2xl p-5 shadow-soft animate-shimmer">Loading analytics...</section>;
   }
 
   if (error) {
-    return <section className="rounded-2xl border border-rose-200 bg-rose-50 p-5 text-rose-700">{error}</section>;
+    return <section className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-5 text-rose-200">{error}</section>;
   }
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft" aria-label="Analytics dashboard">
-      <h2 className="text-xl font-bold text-slate-900">Memory Analytics Dashboard</h2>
+    <section className="glass-card rounded-2xl p-5 shadow-soft" aria-label="Analytics dashboard">
+      <h2 className="font-heading text-xl font-bold text-white">Memory Analytics Dashboard</h2>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <article className="rounded-xl bg-slate-50 p-3">
-          <p className="text-xs uppercase tracking-wide text-slate-500">Total Interactions</p>
-          <p className="text-2xl font-bold text-slate-900">{metrics.total_interactions}</p>
+        <article className="rounded-xl border border-white/10 bg-black/20 p-3">
+          <p className="text-xs uppercase tracking-wide text-slate-400">Total Interactions</p>
+          <p className="gradient-text text-2xl font-bold">{dashboard.total_interactions}</p>
         </article>
-        <article className="rounded-xl bg-slate-50 p-3">
-          <p className="text-xs uppercase tracking-wide text-slate-500">Avg Effectiveness</p>
-          <p className="text-2xl font-bold text-slate-900">{(metrics.avg_effectiveness * 100).toFixed(0)}%</p>
+        <article className="rounded-xl border border-white/10 bg-black/20 p-3">
+          <p className="text-xs uppercase tracking-wide text-slate-400">Avg Confidence</p>
+          <p className="gradient-text text-2xl font-bold">{(avgConfidence * 100).toFixed(0)}%</p>
         </article>
-        <article className="rounded-xl bg-slate-50 p-3">
-          <p className="text-xs uppercase tracking-wide text-slate-500">Week-over-week</p>
-          <p className="text-2xl font-bold text-slate-900">{metrics.week_over_week_improvement}%</p>
+        <article className="rounded-xl border border-white/10 bg-black/20 p-3">
+          <p className="text-xs uppercase tracking-wide text-slate-400">Top Issue Type</p>
+          <p className="gradient-text text-2xl font-bold">{topIssue}</p>
         </article>
-        <article className="rounded-xl bg-slate-50 p-3">
-          <p className="text-xs uppercase tracking-wide text-slate-500">Resolution Time</p>
-          <p className="text-2xl font-bold text-slate-900">{metrics.resolution_time_metrics?.avg_resolution_minutes || 0}m</p>
+        <article className="rounded-xl border border-white/10 bg-black/20 p-3">
+          <p className="text-xs uppercase tracking-wide text-slate-400">Active Customers</p>
+          <p className="gradient-text text-2xl font-bold">{activeCustomers}</p>
         </article>
       </div>
 
-      <div className="mt-5 h-64 rounded-xl border border-slate-100 p-2">
+      <div className="mt-5 h-64 rounded-xl border border-white/10 bg-black/20 p-2">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData}>
-            <XAxis dataKey="issue" tick={{ fontSize: 12 }} />
-            <YAxis allowDecimals={false} />
-            <Tooltip />
-            <Bar dataKey="count" fill="#14b8a6" radius={[8, 8, 0, 0]} />
-          </BarChart>
+          <LineChart data={chartData}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+            <XAxis dataKey="day" tick={{ fontSize: 12, fill: '#cbd5e1' }} />
+            <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: '#cbd5e1' }} />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: '#111118',
+                border: '1px solid #2a2a3a',
+                borderRadius: '10px',
+                color: '#fff'
+              }}
+            />
+            <Line type="monotone" dataKey="interactions" stroke="#7c6af7" strokeWidth={2.5} dot={{ r: 2 }} />
+          </LineChart>
         </ResponsiveContainer>
-      </div>
-
-      <div className="mt-5 grid gap-4 lg:grid-cols-2">
-        <article>
-          <h3 className="text-sm font-semibold text-slate-800">Most Effective Solutions</h3>
-          <ul className="mt-2 space-y-2 text-sm text-slate-700">
-            {(metrics.most_effective_solutions || []).map((item) => (
-              <li key={item.interaction_id} className="rounded-lg bg-slate-50 p-2">
-                <p className="font-medium">{item.issue_type}</p>
-                <p className="text-xs text-slate-500">Score: {((item.effectiveness_score || 0) * 100).toFixed(0)}%</p>
-                <p className="line-clamp-2 text-xs">{item.response_preview}</p>
-              </li>
-            ))}
-          </ul>
-        </article>
-
-        <article>
-          <h3 className="text-sm font-semibold text-slate-800">Customer Satisfaction</h3>
-          <div className="mt-2 rounded-lg bg-emerald-50 p-3">
-            <p className="text-2xl font-bold text-emerald-700">{metrics.customer_satisfaction_trending?.score_percent || 0}%</p>
-            <p className="text-sm text-emerald-800">{metrics.customer_satisfaction_trending?.label || 'n/a'}</p>
-          </div>
-        </article>
       </div>
     </section>
   );
