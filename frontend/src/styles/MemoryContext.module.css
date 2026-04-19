@@ -1,0 +1,88 @@
+.memory-context {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: #f0f9ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+}
+
+.memory-toggle {
+  width: 100%;
+  padding: 0.75rem;
+  background: linear-gradient(135deg, #3b82f6, #1e40af);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.memory-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.memory-content {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #bfdbfe;
+}
+
+.patterns-section,
+.cases-section {
+  margin-bottom: 1rem;
+}
+
+.patterns-section h4,
+.cases-section h4 {
+  margin: 0 0 0.75rem 0;
+  color: #1e40af;
+  font-size: 0.95rem;
+}
+
+.patterns-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pattern-tag {
+  background: #3b82f6;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.cases-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.case-item {
+  background: white;
+  padding: 0.75rem;
+  border-radius: 4px;
+  border-left: 3px solid #3b82f6;
+}
+
+.case-text {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  color: #1e293b;
+  line-height: 1.4;
+}
+
+.case-meta {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.effectiveness {
+  color: #10b981;
+  font-weight: 600;
+}
