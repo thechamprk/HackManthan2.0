@@ -26,12 +26,11 @@ app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(requestLogger);
 
-app.get('/health', (_req, res) => {
+app.get('/', (_req, res) => {
   res.status(200).json({
-    status: 'ok',
-    service: 'hindsighthub-backend',
-    timestamp: new Date().toISOString(),
-    environment: NODE_ENV
+    success: true,
+    message: 'HindsightHub backend is running',
+    health: '/health'
   });
 });
 

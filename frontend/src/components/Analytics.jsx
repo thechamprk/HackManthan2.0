@@ -1,69 +1,82 @@
-import { useMemo } from 'react';
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { useAnalytics } from '../hooks/useAnalytics';
-import LoadingSpinner from './LoadingSpinner';
+import { useEffect, useState } from 'react';
 
-function Analytics() {
-  const { dashboard, interactions, chartData, loading, error } = useAnalytics();
-  const activeCustomers = useMemo(() => new Set(interactions.map((item) => item.customer_id)).size, [interactions]);
-  const topIssue = dashboard?.top_issues?.[0]?.issue || 'n/a';
-  const avgConfidence = Number(dashboard?.avg_effectiveness || 0);
+const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-  if (loading) {
-    return (
-      <section className="glass-card rounded-2xl p-5 shadow-soft animate-shimmer">
-        <LoadingSpinner label="Loading analytics..." />
-      </section>
-    );
-  }
+export default function Analytics() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  if (error) {
-    return <section className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-5 text-rose-200">{error}</section>;
-  }
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        const res = await fetch(`${API}/api/analytics/dashboard`);
+        const payload = await res.json();
+        if (mounted && payload?.success) setData(payload.data);
+      } catch {
+        // silent fail
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+    load();
+    const id = setInterval(load, 30000);
+    return () => { mounted = false; clearInterval(id); };
+  }, []);
+
+  const stats = [
+    { label: 'Total Interactions', value: data?.total_interactions ?? 0 },
+    { label: 'Avg Effectiveness', value: `${Math.round((data?.avg_effectiveness ?? 0) * 100)}%` },
+    { label: 'Learning Trend', value: `${data?.learning_trend ?? 0}%` },
+    { label: 'Top Issue', value: data?.top_issues?.[0]?.issue?.replace(/_/g, ' ') || 'n/a' },
+  ];
 
   return (
-    <section className="glass-card rounded-2xl p-5 shadow-soft" aria-label="Analytics dashboard">
-      <h2 className="font-heading text-xl font-bold text-white">Memory Analytics Dashboard</h2>
-
-      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <article className="rounded-xl border border-white/10 bg-black/20 p-3">
-          <p className="text-xs uppercase tracking-wide text-slate-400">Total Interactions</p>
-          <p className="gradient-text text-2xl font-bold">{dashboard.total_interactions}</p>
-        </article>
-        <article className="rounded-xl border border-white/10 bg-black/20 p-3">
-          <p className="text-xs uppercase tracking-wide text-slate-400">Avg Confidence</p>
-          <p className="gradient-text text-2xl font-bold">{(avgConfidence * 100).toFixed(0)}%</p>
-        </article>
-        <article className="rounded-xl border border-white/10 bg-black/20 p-3">
-          <p className="text-xs uppercase tracking-wide text-slate-400">Top Issue Type</p>
-          <p className="gradient-text text-2xl font-bold">{topIssue}</p>
-        </article>
-        <article className="rounded-xl border border-white/10 bg-black/20 p-3">
-          <p className="text-xs uppercase tracking-wide text-slate-400">Active Customers</p>
-          <p className="gradient-text text-2xl font-bold">{activeCustomers}</p>
-        </article>
+    <div className="glass" style={{ borderRadius: 16, padding: '1.5rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: '1rem' }}>
+        <span style={{ fontSize: 16 }}>📊</span>
+        <h3 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '0.95rem' }}>
+          Memory Analytics
+        </h3>
+        {!loading && (
+          <span style={{
+            marginLeft: 'auto', fontSize: '0.65rem', color: 'var(--success)',
+            display: 'flex', alignItems: 'center', gap: 4
+          }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success)', display: 'inline-block' }} />
+            Live
+          </span>
+        )}
       </div>
 
-      <div className="mt-5 h-64 rounded-xl border border-white/10 bg-black/20 p-2">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-            <XAxis dataKey="day" tick={{ fontSize: 12, fill: '#cbd5e1' }} />
-            <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: '#cbd5e1' }} />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: '#111118',
-                border: '1px solid #2a2a3a',
-                borderRadius: '10px',
-                color: '#fff'
-              }}
-            />
-            <Line type="monotone" dataKey="interactions" stroke="#7c6af7" strokeWidth={2.5} dot={{ r: 2 }} />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-    </section>
+      <div className="accent-bar" style={{ marginBottom: '1.25rem' }} />
+
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)', fontSize: '0.85rem' }}>
+          Loading analytics...
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
+          {stats.map((s, i) => (
+            <div key={i} style={{
+              padding: '1rem', borderRadius: 12,
+              background: 'var(--surface2)', border: '1px solid var(--border)',
+              textAlign: 'center'
+            }}>
+              <div style={{
+                fontFamily: 'Syne, sans-serif', fontWeight: 800,
+                fontSize: '1.6rem', letterSpacing: '-0.02em',
+                background: 'linear-gradient(135deg, var(--accent), var(--accent2))',
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                textTransform: 'capitalize'
+              }}>
+                {s.value}
+              </div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--muted)', marginTop: 4 }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
-
-export default Analytics;

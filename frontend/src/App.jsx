@@ -1,13 +1,31 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import ErrorBoundary from './components/ErrorBoundary';
-import Footer from './components/Footer';
-import Header from './components/Header';
-import Dashboard from './pages/Dashboard';
-import Documentation from './pages/Documentation';
-import Home from './pages/Home';
+import { useCallback, useEffect, useMemo, useState, Component } from 'react';
 import Landing from './pages/Landing';
-import { ROUTES } from './utils/constants';
-import './styles/common.css';
+import Home from './pages/Home';
+
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, message: '' };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, message: error?.message || 'Unknown error' };
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          margin: '3rem auto', maxWidth: 480, padding: '2rem',
+          background: 'var(--surface)', border: '1px solid #f87171',
+          borderRadius: 12, color: '#fca5a5'
+        }}>
+          <h1 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700 }}>Something went wrong</h1>
+          <p style={{ marginTop: 8, fontSize: '0.875rem' }}>{this.state.message}</p>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 function App() {
   const [route, setRoute] = useState({
@@ -16,13 +34,10 @@ function App() {
   });
 
   useEffect(() => {
-    function syncRoute() {
-      setRoute({
-        pathname: window.location.pathname,
-        search: window.location.search
-      });
-    }
-
+    const syncRoute = () => setRoute({
+      pathname: window.location.pathname,
+      search: window.location.search
+    });
     window.addEventListener('popstate', syncRoute);
     window.addEventListener('routechange', syncRoute);
     return () => {
@@ -37,37 +52,16 @@ function App() {
     window.dispatchEvent(new Event('routechange'));
   }, []);
 
-  const customerName = useMemo(() => new URLSearchParams(route.search).get('name') || 'Guest', [route.search]);
-
-  const handleLogout = useCallback(() => {
-    navigate(ROUTES.LANDING);
-  }, [navigate]);
-
   const screen = useMemo(() => {
-    if (route.pathname === ROUTES.HOME) {
+    if (route.pathname === '/app') {
       return <Home search={route.search} onNavigate={navigate} />;
     }
-
-    if (route.pathname === ROUTES.DASHBOARD) {
-      return <Dashboard />;
-    }
-
-    if (route.pathname === ROUTES.DOCS) {
-      return <Documentation />;
-    }
-
     return <Landing onNavigate={navigate} />;
-  }, [navigate, route.pathname, route.search]);
+  }, [route.pathname, route.search, navigate]);
 
   return (
     <ErrorBoundary>
-      <div className="page-shell min-h-screen bg-app-gradient text-white">
-        {route.pathname !== ROUTES.LANDING && (
-          <Header customerName={customerName} onNavigate={navigate} onLogout={handleLogout} />
-        )}
-        <div className="page-main">{screen}</div>
-        <Footer />
-      </div>
+      <div style={{ minHeight: '100vh' }}>{screen}</div>
     </ErrorBoundary>
   );
 }
