@@ -9,6 +9,7 @@ const morgan = require('morgan');
 
 const supportRoutes = require('./routes/support.routes');
 const analyticsRoutes = require('./routes/analytics.routes');
+const insightsRoutes = require('./routes/insights.routes');
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -43,6 +44,7 @@ app.get('/health', (_req, res) => {
 
 app.use('/api/support', supportRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/insights', insightsRoutes);
 
 app.use((req, res) => {
   res.status(404).json({

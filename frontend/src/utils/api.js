@@ -42,4 +42,33 @@ export const analytics = {
   getMetrics: async () => request('/api/analytics/metrics')
 };
 
+export const insights = {
+  listProjects: async () => request('/api/insights/projects'),
+  createProject: async (payload) =>
+    request('/api/insights/projects', {
+      method: 'POST',
+      data: payload
+    }),
+  generateTodos: async (projectId, context) =>
+    request(`/api/insights/projects/${projectId}/todos/ai`, {
+      method: 'POST',
+      data: { context }
+    }),
+  searchGrants: async (payload) =>
+    request('/api/insights/grants/search', {
+      method: 'POST',
+      data: payload
+    }),
+  continueOnboarding: async (payload) =>
+    request('/api/insights/onboarding/continue', {
+      method: 'POST',
+      data: payload
+    }),
+  deepSearchSummary: async (payload) =>
+    request('/api/insights/search/summary', {
+      method: 'POST',
+      data: payload
+    })
+};
+
 export default api;
