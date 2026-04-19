@@ -100,30 +100,96 @@ Notes:
 
 ## Local Setup
 
-### 1) Backend
+Required runtime:
+- Node.js 18+ (recommended: Node.js 18 or 20 LTS)
+
+Port overview (no conflicts):
+- Backend API: http://localhost:3000
+- Frontend Vite app: http://localhost:5173
+- Optional OpenClaw gateway (if enabled): http://localhost:3001
+
+### 1) First-time install (from repository root)
+
+#### Generic shell (macOS/Linux/Git Bash)
 
 ```bash
-cd backend
+cd /path/to/HackManthan2.0
+npm install
+npm run install:all
+```
+
+#### Windows PowerShell
+
+```powershell
+cd C:\path\to\HackManthan2.0
+npm install
+npm run install:all
+```
+
+### 2) Run frontend + backend together (from repository root)
+
+#### Generic shell
+
+```bash
+cd /path/to/HackManthan2.0
+npm run dev
+```
+
+#### Windows PowerShell
+
+```powershell
+cd C:\path\to\HackManthan2.0
+npm run dev
+```
+
+### 3) Run services separately
+
+#### Backend only
+
+Generic shell:
+```bash
+cd /path/to/HackManthan2.0/backend
 npm install
 npm run dev
 ```
 
-Backend runs at:
-- http://localhost:3000
+Windows PowerShell:
+```powershell
+cd C:\path\to\HackManthan2.0\backend
+npm install
+npm run dev
+```
+
+#### Frontend only
+
+Generic shell:
+```bash
+cd /path/to/HackManthan2.0/frontend
+npm install
+npm run dev
+```
+
+Windows PowerShell:
+```powershell
+cd C:\path\to\HackManthan2.0\frontend
+npm install
+npm run dev
+```
 
 Health check:
-- GET /health
+- GET /health (backend)
 
-### 2) Frontend
+### 4) Troubleshooting ENOENT (`Could not read package.json`)
 
+If you run `npm run dev` from the repo root and see ENOENT, verify:
+1. You are in the project root that contains `package.json`.
+2. Root dependencies were installed with `npm install`.
+3. Service dependencies were installed with `npm run install:all`.
+
+Then retry:
 ```bash
-cd frontend
-npm install
 npm run dev
 ```
-
-Frontend runs at:
-- http://localhost:5173
 
 ## API Reference
 
