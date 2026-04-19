@@ -46,7 +46,6 @@ const HINDSIGHT_CONTEXT_ID = process.env.HINDSIGHT_CONTEXT_ID || 'support-agent-
 const MAX_SIMILAR_CASES = Number(process.env.MAX_SIMILAR_CASES) || 5;
 const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
 const GROQ_TIMEOUT_MS = Number(process.env.GROQ_TIMEOUT_MS) || 15000;
-const MAX_MESSAGE_LENGTH = Number(process.env.MAX_MESSAGE_LENGTH) || 1200;
 
 module.exports = {
   ROUTES,
@@ -58,6 +57,5 @@ module.exports = {
   HINDSIGHT_CONTEXT_ID,
   MAX_SIMILAR_CASES,
   GROQ_MODEL,
-  GROQ_TIMEOUT_MS,
-  MAX_MESSAGE_LENGTH
+  GROQ_TIMEOUT_MS
 };
