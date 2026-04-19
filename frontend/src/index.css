@@ -1,86 +1,126 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Syne:wght@700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --bg: #f3f6fa;
-  --surface: #ffffff;
-  --surface2: #f8fbff;
-  --border: #d6e1eb;
-  --accent: #1f6feb;
-  --accent2: #0f766e;
-  --accent3: #b7791f;
-  --text: #102a43;
-  --muted: #627d98;
-  --success: #2f9e44;
+  --bg: #0a0a0f;
+  --surface: #111118;
+  --purple: #7c6af7;
+  --teal: #4fd1c5;
+  --amber: #f6ad55;
+  color-scheme: dark;
 }
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
+  margin: 0;
+  font-family: 'DM Sans', sans-serif;
   background: var(--bg);
-  color: var(--text);
-  font-family: 'IBM Plex Sans', sans-serif;
-  min-height: 100vh;
-  background-image:
-    radial-gradient(ellipse 80% 40% at 10% 0%, rgba(31,111,235,0.08) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 30% at 90% 100%, rgba(15,118,110,0.06) 0%, transparent 60%);
+  color: #f8fafc;
 }
 
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.bg-app-gradient {
+  background-image:
+    radial-gradient(circle at 10% 10%, rgba(79, 209, 197, 0.18), transparent 42%),
+    radial-gradient(circle at 90% 30%, rgba(124, 106, 247, 0.2), transparent 38%),
+    linear-gradient(180deg, #08080d 0%, #0a0a0f 100%);
+}
+
+h1,
+h2,
+h3,
+.font-heading {
+  font-family: 'Syne', sans-serif;
+}
+
+.glass-card {
+  background: rgba(17, 17, 24, 0.8);
+  border: 1px solid #2a2a3a;
+  backdrop-filter: blur(20px);
+}
+
+.gradient-text {
+  background: linear-gradient(92deg, var(--teal) 0%, #b59cff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-@keyframes pulse-dot {
-  0%, 100% { opacity: 0.3; transform: scale(0.8); }
-  50% { opacity: 1; transform: scale(1.2); }
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
-.fade-up { animation: fadeUp 0.4s ease forwards; }
-
-.thinking-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: #3d5a80;
-  animation: pulse-dot 1.2s ease infinite;
-}
-.thinking-dot:nth-child(2) { animation-delay: 0.2s; }
-.thinking-dot:nth-child(3) { animation-delay: 0.4s; }
-
-.glass {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+.animate-fade-up {
+  animation: fadeUp 320ms ease-out both;
 }
 
-.accent-bar {
-  height: 2px;
-  background: linear-gradient(90deg, var(--accent), var(--accent2));
-  border-radius: 1px;
+.animate-pulse-dot {
+  animation: pulse 1s ease-in-out infinite;
 }
 
-input, textarea {
-  background: #ffffff !important;
-  color: var(--text) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 10px !important;
-  font-family: 'IBM Plex Sans', sans-serif !important;
-  transition: border-color 0.2s ease;
+.animate-shimmer {
+  background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04));
+  background-size: 240% 100%;
+  animation: shimmer 1.8s linear infinite;
 }
-input:focus, textarea:focus {
-  outline: none !important;
-  border-color: var(--accent) !important;
-  box-shadow: 0 0 0 3px rgba(31,111,235,0.12) !important;
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2f2f45 transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #2f2f45;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+input,
+button,
+textarea {
+  font-family: 'DM Sans', sans-serif;
+}
+
+input,
+textarea {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid #2a2a3a;
+  color: #f8fafc;
 }
