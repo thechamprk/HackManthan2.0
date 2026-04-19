@@ -17,6 +17,7 @@ function errorHandler(err, req, res, _next) {
       statusCode,
       path: req.originalUrl,
       method: req.method,
+      requestId: req.requestId,
       message: err.message,
       stack: err.stack
     },
@@ -26,7 +27,8 @@ function errorHandler(err, req, res, _next) {
   return res.status(statusCode).json(
     errorResponse(
       err.publicMessage || err.message || 'Internal server error',
-      isDev ? err.stack : undefined
+      isDev ? err.stack : undefined,
+      statusCode
     )
   );
 }

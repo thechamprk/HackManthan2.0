@@ -34,6 +34,14 @@ app.get('/', (_req, res) => {
   });
 });
 
+app.get('/health', (_req, res) => {
+  res.status(200).json({
+    success: true,
+    status: 'ok',
+    environment: NODE_ENV
+  });
+});
+
 app.use('/api/support', supportRoutes);
 app.use('/api/analytics', analyticsRoutes);
 

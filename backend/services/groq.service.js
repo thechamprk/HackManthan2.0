@@ -1,7 +1,9 @@
-const DEFAULT_MODEL = process.env.GROQ_MODEL || 'mixtral-8x7b-32768';
-const { createGroqClient, withGroqRetry } = require('../config/groq');
+const { getGroqInstance, withGroqRetry } = require('../config/groq');
 const { logger } = require('../middleware/logger');
-const groq = createGroqClient();
+const { GROQ_MODEL, GROQ_TIMEOUT_MS } = require('../utils/constants');
+
+const groq = getGroqInstance();
+const MIN_RESPONSE_LENGTH = 2;
 
 function fallbackResponse(userMessage) {
   return `I am currently experiencing high load. Here is a safe immediate step: please confirm your account email and describe your issue in one sentence. Original request: ${String(userMessage || '').slice(0, 200)}`;
@@ -20,21 +22,38 @@ async function generateResponse(systemPrompt, userMessage, temperature = 0.3, op
     };
   }
 
-  const model = options.model || DEFAULT_MODEL;
+  const model = options.model || GROQ_MODEL;
   const stream = Boolean(options.stream);
+  const timeoutMs = Number(options.timeoutMs) || GROQ_TIMEOUT_MS;
 
   try {
-    const completion = await withGroqRetry(() =>
-      groq.chat.completions.create({
-        model,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userMessage }
-        ],
-        temperature,
-        stream
-      })
-    );
+    const completion = await withGroqRetry(async () => {
+      let timeoutId;
+      try {
+        return await Promise.race([
+          groq.chat.completions.create({
+            model,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userMessage }
+            ],
+            temperature,
+            stream
+          }),
+          new Promise((_, reject) => {
+            timeoutId = setTimeout(() => {
+              const timeoutError = new Error(`Groq request timed out after ${timeoutMs}ms`);
+              timeoutError.statusCode = 408;
+              reject(timeoutError);
+            }, timeoutMs);
+          })
+        ]);
+      } finally {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+      }
+    });
 
     if (stream) {
       return {
@@ -46,8 +65,8 @@ async function generateResponse(systemPrompt, userMessage, temperature = 0.3, op
 
     const content = completion?.choices?.[0]?.message?.content?.trim();
 
-    if (!content) {
-      throw new Error('Groq response content was empty');
+    if (!validateResponse(content)) {
+      throw new Error('Groq response content was invalid or too short');
     }
 
     return {
@@ -72,6 +91,21 @@ async function generateResponse(systemPrompt, userMessage, temperature = 0.3, op
   }
 }
 
+async function streamResponse(systemPrompt, userMessage, temperature = 0.3, options = {}) {
+  return generateResponse(systemPrompt, userMessage, temperature, { ...options, stream: true });
+}
+
+function validateResponse(responseText) {
+  if (typeof responseText !== 'string') {
+    return false;
+  }
+
+  const trimmed = responseText.trim();
+  return Boolean(trimmed) && trimmed.length >= MIN_RESPONSE_LENGTH;
+}
+
 module.exports = {
-  generateResponse
+  generateResponse,
+  streamResponse,
+  validateResponse
 };

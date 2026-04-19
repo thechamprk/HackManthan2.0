@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useChatStore } from '../context/ChatContext';
-import { request } from '../utils/api';
+import { request, support } from '../utils/api';
+import { CHAT_MESSAGES_LIMIT } from '../utils/constants';
 
 function createUserMessage(content) {
   return {
@@ -23,8 +24,26 @@ function createSystemError(message) {
 }
 
 export function useChat(customerId) {
-  const { messages, loading, lastMetadata, resolvedIds, addMessage, setLoading, setLastMetadata, markResolved } =
-    useChatStore();
+  const {
+    messages,
+    loading,
+    isLoading,
+    error,
+    memory,
+    currentCustomerId,
+    lastMetadata,
+    resolvedIds,
+    addMessage,
+    setCurrentCustomerId,
+    setError,
+    setMemory,
+    setLoading,
+    setLastMetadata,
+    markResolved,
+    clearChat
+  } = useChatStore();
+
+  const activeCustomerId = customerId || currentCustomerId;
 
   const conversationContext = useMemo(
     () =>
@@ -34,29 +53,34 @@ export function useChat(customerId) {
       })),
     [messages]
   );
+  const visibleMessages = useMemo(() => messages.slice(-CHAT_MESSAGES_LIMIT), [messages]);
 
   async function sendSupportMessage(content) {
     if (!content.trim() || loading) return;
+    if (!activeCustomerId) {
+      setError('customerId is required');
+      return;
+    }
 
     const userMessage = createUserMessage(content);
     addMessage(userMessage);
     setLoading(true);
 
     try {
-      const payload = await request('/api/support', {
-        method: 'POST',
-        data: {
-          customer_id: customerId,
-          message: userMessage.content,
-          conversation_context: [...conversationContext, { role: 'user', content: userMessage.content }]
-        }
-      });
+      const payload = await support.sendMessage(
+        activeCustomerId,
+        userMessage.content,
+        [...conversationContext, { role: 'user', content: userMessage.content }]
+      );
 
       if (!payload.success) {
         throw new Error(payload?.error?.message || 'Failed to send message');
       }
 
       const data = payload.data;
+      setCurrentCustomerId(activeCustomerId);
+      setError('');
+      setMemory(data.hindsight_memory_used || { retrieved_cases: [], patterns_applied: [] });
       addMessage({
         id: data.interaction_id,
         role: 'agent',
@@ -68,6 +92,7 @@ export function useChat(customerId) {
       });
       setLastMetadata(data);
     } catch (error) {
+      setError(error.message);
       addMessage(createSystemError(error.message));
     } finally {
       setLoading(false);
@@ -94,11 +119,15 @@ export function useChat(customerId) {
   }
 
   return {
-    messages,
-    loading,
+    messages: visibleMessages,
+    isLoading: isLoading || loading,
+    error,
+    memory,
     lastMetadata,
     resolvedIds,
+    sendMessage: sendSupportMessage,
     sendSupportMessage,
+    clearChat,
     markInteractionResolved
   };
 }

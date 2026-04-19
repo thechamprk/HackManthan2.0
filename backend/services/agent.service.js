@@ -1,8 +1,8 @@
 const { v4: uuidv4 } = require('uuid');
 const { retrieve, storeInteraction, normalizeIssueType, buildTags } = require('./hindsight.service');
-const { generateResponse } = require('./llm.service');
+const { generateResponse } = require('./groq.service');
 const { logger } = require('../middleware/logger');
-const { SUPPORT_SIMILAR_CASE_LIMIT } = require('../utils/constants');
+const { MAX_SIMILAR_CASES } = require('../utils/constants');
 
 function summarizeCases(cases) {
   if (!cases.length) {
@@ -71,7 +71,7 @@ async function handleCustomerInquiry(customerId, message, conversationContext = 
 
   let similarCases = [];
   try {
-    similarCases = await retrieve(message, SUPPORT_SIMILAR_CASE_LIMIT);
+    similarCases = await retrieve(message, MAX_SIMILAR_CASES);
   } catch (error) {
     logger.warn({ message: error.message }, 'failed to retrieve similar cases');
   }
@@ -110,11 +110,7 @@ async function handleCustomerInquiry(customerId, message, conversationContext = 
     }
   };
 
-  try {
-    await storeInteraction(interactionRecord);
-  } catch (error) {
-    logger.warn({ message: error.message }, 'failed to store interaction in memory');
-  }
+  await processInteraction(interactionRecord);
 
   return {
     agent_response: agentResponse,
@@ -130,9 +126,18 @@ async function handleCustomerInquiry(customerId, message, conversationContext = 
   };
 }
 
+async function processInteraction(interactionRecord) {
+  try {
+    await storeInteraction(interactionRecord);
+  } catch (error) {
+    logger.warn({ message: error.message }, 'failed to store interaction in memory');
+  }
+}
+
 module.exports = {
   handleCustomerInquiry,
   buildSystemPrompt,
   calculateConfidence,
-  averageEffectiveness
+  averageEffectiveness,
+  processInteraction
 };
