@@ -59,7 +59,7 @@ function Todo() {
   }
 
   async function saveToTasks() {
-    const pending = items.filter((item) => item.text.trim().length > 0);
+    const pending = items.filter((item) => item.text?.trim());
     const defaultDueDate = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
     await Promise.all(
       pending.map((item) =>

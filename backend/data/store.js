@@ -206,7 +206,7 @@ const milestones = [
 
 function ensureUserOnboarding(userId) {
   if (!onboardingByUser[userId]) {
-    onboardingByUser[userId] = structuredClone(onboardingTemplate);
+    onboardingByUser[userId] = JSON.parse(JSON.stringify(onboardingTemplate));
   }
   return onboardingByUser[userId];
 }
