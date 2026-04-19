@@ -21,7 +21,6 @@ const createProjectSchema = z.object({
 });
 
 const todoSchema = z.object({
-  project_id: z.string().min(3).optional(),
   context: z.string().max(500).optional()
 });
 
@@ -70,7 +69,7 @@ router.post('/projects/:projectId/todos/ai', async (req, res, next) => {
     const parsedBody = todoSchema.parse(req.body || {});
     const projectId = z.string().min(3).parse(req.params?.projectId);
     const result = await generateAiTodoStructure({
-      project_id: parsedBody.project_id || projectId,
+      project_id: projectId,
       context: parsedBody.context
     });
     return res.status(HTTP_STATUS.OK).json(successResponse(result));

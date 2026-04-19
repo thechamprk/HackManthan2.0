@@ -2,6 +2,15 @@ const { v4: uuidv4 } = require('uuid');
 const { listInteractions, retrieve } = require('./hindsight.service');
 
 const projects = new Map();
+const CONTEXT_PREVIEW_CHAR_LIMIT = 140;
+
+function truncatePreview(text = '', limit = CONTEXT_PREVIEW_CHAR_LIMIT) {
+  if (text.length <= limit) return text;
+  const preview = text.slice(0, limit);
+  const lastWordIndex = preview.lastIndexOf(' ');
+  const safePreview = lastWordIndex > 40 ? preview.slice(0, lastWordIndex) : preview;
+  return `${safePreview}...`;
+}
 
 const grantCatalog = [
   {
@@ -34,9 +43,11 @@ const grantCatalog = [
 ];
 
 function listProjects() {
-  return Array.from(projects.values()).sort(
-    (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
-  );
+  return Array.from(projects.values()).sort((a, b) => {
+    const aTime = Date.parse(a.updated_at || '1970-01-01T00:00:00.000Z');
+    const bTime = Date.parse(b.updated_at || '1970-01-01T00:00:00.000Z');
+    return bTime - aTime;
+  });
 }
 
 function createProject({ name, goal, owner, timeline_weeks }) {
@@ -66,7 +77,9 @@ async function generateAiTodoStructure({ project_id, context }) {
 
   const recent = await listInteractions({ limit: 50 });
   const topIssue = recent[0]?.issue_type || 'general_support';
-  const normalizedContext = String(context || '').trim();
+  const normalizedContext = String(context || '')
+    .trim()
+    .slice(0, 500);
 
   const tasks = [
     {
@@ -83,7 +96,7 @@ async function generateAiTodoStructure({ project_id, context }) {
       module: 'AI To-Do engine',
       status: 'pending',
       description: normalizedContext
-        ? `Convert input context into categorized tasks: ${normalizedContext.slice(0, 140)}`
+        ? `Convert input context into categorized tasks: ${truncatePreview(normalizedContext)}`
         : 'Generate objective-based tasks grouped by discovery, build, and validation.',
       priority: 'high'
     },
@@ -142,10 +155,13 @@ function continueOnboarding({ project_id, current_step, team_size }) {
   const activeStep = String(current_step || baseline[0]);
   const size = Number(team_size) || 1;
 
-  const steps = baseline.map((step) => ({
-    step,
-    status: step === activeStep ? 'in_progress' : baseline.indexOf(step) < baseline.indexOf(activeStep) ? 'done' : 'pending'
-  }));
+  const activeIndex = baseline.indexOf(activeStep);
+  const steps = baseline.map((step, index) => {
+    let status = 'pending';
+    if (index < activeIndex) status = 'done';
+    if (step === activeStep) status = 'in_progress';
+    return { step, status };
+  });
 
   return {
     project: project || null,

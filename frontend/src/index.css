@@ -145,6 +145,7 @@ footer { padding:1.5rem 2.5rem; text-align:center; border-top:1px solid #e8e8e8;
 }
 .insights-list-item.active { border-color:#1D9E75; background:#E1F5EE; }
 .insights-actions { display:flex; gap:.5rem; flex-wrap:wrap; }
+.steps-list { margin: .4rem 0 0 1rem; color:#555; }
 
 @media (max-width: 900px) {
   .chat-grid { grid-template-columns: 1fr; }

@@ -26,9 +26,7 @@ function Insights({ search, onNavigate }) {
         const payload = await insights.listProjects();
         if (mounted && payload?.success) {
           setProjects(payload.data || []);
-          if (!selectedProjectId && payload.data?.length) {
-            setSelectedProjectId(payload.data[0].project_id);
-          }
+          setSelectedProjectId((prev) => prev || payload.data?.[0]?.project_id || '');
         }
       } catch (err) {
         if (mounted) setError(err.message);
@@ -38,7 +36,7 @@ function Insights({ search, onNavigate }) {
     return () => {
       mounted = false;
     };
-  }, [selectedProjectId]);
+  }, []);
 
   async function createNewProject(event) {
     event.preventDefault();
@@ -208,7 +206,13 @@ function Insights({ search, onNavigate }) {
               {onboarding?.steps?.length ? (
                 <div className="case-card">
                   <strong>Onboarding Steps</strong>
-                  <p>{onboarding.steps.map((step) => `${step.step}:${step.status}`).join(' · ')}</p>
+                  <ul className="steps-list">
+                    {onboarding.steps.map((step) => (
+                      <li key={step.step}>
+                        {step.step}: {step.status}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               ) : null}
               {!grants.length && !onboarding ? <p className="muted">No grant/onboarding output yet.</p> : null}
