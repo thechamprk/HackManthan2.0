@@ -68,18 +68,33 @@ app.use((err, _req, res, _next) => {
 });
 
 if (require.main === module) {
-  const server = app.listen(PORT, () => {
-    console.log(`[Server] HindsightHub backend listening on port ${PORT}`);
-  });
+  const MAX_PORT_TRIES = 10;
 
-  server.on('error', (error) => {
-    if (error.code === 'EADDRINUSE') {
-      console.error(`[Server] Port ${PORT} is already in use. Stop the existing server process or change PORT in .env.`);
-      process.exit(0);
-    }
+  function startServer(startPort, attempt = 0) {
+    const targetPort = startPort + attempt;
+    const server = app.listen(targetPort, () => {
+      console.log(`[Server] HindsightHub backend listening on port ${targetPort}`);
+      if (targetPort !== PORT) {
+        console.log(`[Server] Default port ${PORT} was busy, using ${targetPort} instead.`);
+      }
+    });
 
-    throw error;
-  });
+    server.on('error', (error) => {
+      if (error.code === 'EADDRINUSE' && attempt < MAX_PORT_TRIES) {
+        console.warn(`[Server] Port ${targetPort} is in use. Trying ${targetPort + 1}...`);
+        startServer(startPort, attempt + 1);
+        return;
+      }
+
+      if (error.code === 'EADDRINUSE') {
+        console.error(`[Server] Failed to bind after ${MAX_PORT_TRIES + 1} attempts starting at ${PORT}.`);
+      }
+
+      throw error;
+    });
+  }
+
+  startServer(PORT);
 }
 
 module.exports = app;
