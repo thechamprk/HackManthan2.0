@@ -1,36 +1,13 @@
-import { Component, useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import ErrorBoundary from './components/ErrorBoundary';
+import Footer from './components/Footer';
+import Header from './components/Header';
+import Dashboard from './pages/Dashboard';
+import Documentation from './pages/Documentation';
 import Home from './pages/Home';
 import Landing from './pages/Landing';
-
-class ErrorBoundary extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false, message: '' };
-  }
-
-  static getDerivedStateFromError(error) {
-    return { hasError: true, message: error?.message || 'Unknown UI error' };
-  }
-
-  componentDidCatch(error, errorInfo) {
-    if (import.meta.env.DEV) {
-      console.error('[ErrorBoundary] UI crash', error, errorInfo);
-    }
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <main className="mx-auto mt-12 max-w-xl rounded-xl border border-rose-200 bg-rose-50 p-6 text-rose-700">
-          <h1 className="text-xl font-bold">Something went wrong</h1>
-          <p className="mt-2 text-sm">{this.state.message}</p>
-        </main>
-      );
-    }
-
-    return this.props.children;
-  }
-}
+import { ROUTES } from './utils/constants';
+import './styles/common.css';
 
 function App() {
   const [route, setRoute] = useState({
@@ -60,9 +37,23 @@ function App() {
     window.dispatchEvent(new Event('routechange'));
   }, []);
 
+  const customerName = useMemo(() => new URLSearchParams(route.search).get('name') || 'Guest', [route.search]);
+
+  const handleLogout = useCallback(() => {
+    navigate(ROUTES.LANDING);
+  }, [navigate]);
+
   const screen = useMemo(() => {
-    if (route.pathname === '/app') {
+    if (route.pathname === ROUTES.HOME) {
       return <Home search={route.search} onNavigate={navigate} />;
+    }
+
+    if (route.pathname === ROUTES.DASHBOARD) {
+      return <Dashboard />;
+    }
+
+    if (route.pathname === ROUTES.DOCS) {
+      return <Documentation />;
     }
 
     return <Landing onNavigate={navigate} />;
@@ -70,7 +61,13 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-app-gradient text-white">{screen}</div>
+      <div className="page-shell min-h-screen bg-app-gradient text-white">
+        {route.pathname !== ROUTES.LANDING && (
+          <Header customerName={customerName} onNavigate={navigate} onLogout={handleLogout} />
+        )}
+        <div className="page-main">{screen}</div>
+        <Footer />
+      </div>
     </ErrorBoundary>
   );
 }

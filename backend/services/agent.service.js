@@ -1,6 +1,8 @@
 const { v4: uuidv4 } = require('uuid');
 const { retrieve, storeInteraction, normalizeIssueType, buildTags } = require('./hindsight.service');
 const { generateResponse } = require('./llm.service');
+const { logger } = require('../middleware/logger');
+const { SUPPORT_SIMILAR_CASE_LIMIT } = require('../utils/constants');
 
 function summarizeCases(cases) {
   if (!cases.length) {
@@ -69,9 +71,9 @@ async function handleCustomerInquiry(customerId, message, conversationContext = 
 
   let similarCases = [];
   try {
-    similarCases = await retrieve(message, 5);
+    similarCases = await retrieve(message, SUPPORT_SIMILAR_CASE_LIMIT);
   } catch (error) {
-    console.warn('[AgentService] Failed to retrieve similar cases', error.message);
+    logger.warn({ message: error.message }, 'failed to retrieve similar cases');
   }
 
   const systemPrompt = buildSystemPrompt({
@@ -111,7 +113,7 @@ async function handleCustomerInquiry(customerId, message, conversationContext = 
   try {
     await storeInteraction(interactionRecord);
   } catch (error) {
-    console.warn('[AgentService] Failed to store interaction in memory', error.message);
+    logger.warn({ message: error.message }, 'failed to store interaction in memory');
   }
 
   return {

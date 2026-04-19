@@ -1,76 +1,20 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-
-const API_URL = import.meta.env.VITE_API_URL || import.meta.env.REACT_APP_API_URL || 'http://localhost:3000';
+import { useAnalytics } from '../hooks/useAnalytics';
+import LoadingSpinner from './LoadingSpinner';
 
 function Analytics() {
-  const [dashboard, setDashboard] = useState(null);
-  const [interactions, setInteractions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    let active = true;
-
-    async function fetchMetrics() {
-      try {
-        const [dashboardResponse, interactionsResponse] = await Promise.all([
-          fetch(`${API_URL}/api/analytics/dashboard`),
-          fetch(`${API_URL}/api/analytics/interactions?limit=300`)
-        ]);
-
-        const [dashboardPayload, interactionsPayload] = await Promise.all([
-          dashboardResponse.json(),
-          interactionsResponse.json()
-        ]);
-
-        if (!dashboardResponse.ok || !dashboardPayload.success) {
-          throw new Error(dashboardPayload?.error?.message || 'Failed to load analytics');
-        }
-        if (!interactionsResponse.ok || !interactionsPayload.success) {
-          throw new Error(interactionsPayload?.error?.message || 'Failed to load interactions');
-        }
-
-        if (active) {
-          setDashboard(dashboardPayload.data);
-          setInteractions(interactionsPayload.data || []);
-        }
-      } catch (err) {
-        if (active) setError(err.message);
-      } finally {
-        if (active) setLoading(false);
-      }
-    }
-
-    fetchMetrics();
-    const interval = setInterval(fetchMetrics, 30000);
-    return () => {
-      active = false;
-      clearInterval(interval);
-    };
-  }, []);
-
-  const chartData = useMemo(
-    () =>
-      interactions.reduce((acc, item) => {
-        const day = new Date(item.timestamp || Date.now()).toLocaleDateString();
-        const existing = acc.find((entry) => entry.day === day);
-        if (existing) {
-          existing.interactions += 1;
-        } else {
-          acc.push({ day, interactions: 1 });
-        }
-        return acc;
-      }, []),
-    [interactions]
-  );
-
+  const { dashboard, interactions, chartData, loading, error } = useAnalytics();
   const activeCustomers = useMemo(() => new Set(interactions.map((item) => item.customer_id)).size, [interactions]);
   const topIssue = dashboard?.top_issues?.[0]?.issue || 'n/a';
   const avgConfidence = Number(dashboard?.avg_effectiveness || 0);
 
   if (loading) {
-    return <section className="glass-card rounded-2xl p-5 shadow-soft animate-shimmer">Loading analytics...</section>;
+    return (
+      <section className="glass-card rounded-2xl p-5 shadow-soft animate-shimmer">
+        <LoadingSpinner label="Loading analytics..." />
+      </section>
+    );
   }
 
   if (error) {
