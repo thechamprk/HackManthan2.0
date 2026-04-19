@@ -121,7 +121,7 @@ npm run install:all
 #### Windows PowerShell
 
 ```powershell
-cd F:\HackManthan2.0
+cd C:\path\to\HackManthan2.0
 npm install
 npm run install:all
 ```
@@ -138,7 +138,7 @@ npm run dev
 #### Windows PowerShell
 
 ```powershell
-cd F:\HackManthan2.0
+cd C:\path\to\HackManthan2.0
 npm run dev
 ```
 
@@ -155,7 +155,7 @@ npm run dev
 
 Windows PowerShell:
 ```powershell
-cd F:\HackManthan2.0\backend
+cd C:\path\to\HackManthan2.0\backend
 npm install
 npm run dev
 ```
@@ -171,7 +171,7 @@ npm run dev
 
 Windows PowerShell:
 ```powershell
-cd F:\HackManthan2.0\frontend
+cd C:\path\to\HackManthan2.0\frontend
 npm install
 npm run dev
 ```
