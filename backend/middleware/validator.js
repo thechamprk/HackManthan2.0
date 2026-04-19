@@ -6,7 +6,8 @@ function validate(schema, source) {
   return (req, res, next) => {
     try {
       req.validated = req.validated || {};
-      req.validated[source] = schema.parse(req[source]);
+      const sourceData = req[source] ?? {};
+      req.validated[source] = schema.parse(sourceData);
       return next();
     } catch (error) {
       if (error instanceof z.ZodError) {

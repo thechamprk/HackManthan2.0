@@ -8,8 +8,7 @@ function notFoundHandler(req, res) {
     .json(errorResponse(`Route not found: ${req.method} ${req.originalUrl}`));
 }
 
-function errorHandler(err, req, res, next) {
-  void next;
+function errorHandler(err, req, res, _next) {
   const statusCode = err.statusCode || HTTP_STATUS.INTERNAL_SERVER_ERROR;
   const isDev = (process.env.NODE_ENV || 'development') !== 'production';
 

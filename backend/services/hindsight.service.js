@@ -49,27 +49,27 @@ function normalizeInteractionRecord(item = {}) {
   };
 }
 
-async function withRetry(action, maxRetries = 2) {
+async function withRetry(action, maxRetries = 3) {
   function isKnownInfraCapacityError(error) {
     const text = String(error?.message || '').toLowerCase();
     return text.includes('out of shared memory') || text.includes('max_locks_per_transaction');
   }
 
-  for (let attempt = 0; attempt < maxRetries + 2; attempt += 1) {
+  for (let attempt = 0; attempt < maxRetries; attempt += 1) {
     try {
       return await action();
     } catch (error) {
-      const canRetry = attempt <= maxRetries;
+      const finalAttempt = attempt >= maxRetries - 1;
       const retryable =
         (!error.statusCode || error.statusCode >= 500 || error.name === 'AbortError') &&
         !isKnownInfraCapacityError(error);
 
-      if (!canRetry || !retryable) {
+      if (finalAttempt || !retryable) {
         throw error;
       }
 
       const delayMs = 200 * Math.pow(2, attempt);
-      logger.warn({ attempt, maxRetries, message: error.message }, 'retrying hindsight request');
+      logger.warn({ attempt: attempt + 1, maxRetries, message: error.message }, 'retrying hindsight request');
       await sleep(delayMs);
     }
   }

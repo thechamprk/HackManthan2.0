@@ -8,7 +8,7 @@ function createHindsightClient() {
   if (!apiKey) {
     logger.warn('Missing HINDSIGHT_API_KEY. Using no-op fallback mode.');
     return {
-      store: async () => ({ id: `mock_${Date.now()}`, source: 'fallback' }),
+      store: async (_payload) => ({ id: `mock_${Date.now()}`, source: 'fallback' }),
       retrieve: async () => ({ results: [], source: 'fallback' }),
       update: async ({ id }) => ({ id, source: 'fallback' })
     };

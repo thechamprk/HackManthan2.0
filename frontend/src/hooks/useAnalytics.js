@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { request } from '../utils/api';
+import { ANALYTICS_INTERACTIONS_LIMIT } from '../utils/constants';
 
 export function useAnalytics() {
   const [dashboard, setDashboard] = useState(null);
@@ -14,7 +15,7 @@ export function useAnalytics() {
       try {
         const [dashboardPayload, interactionsPayload] = await Promise.all([
           request('/api/analytics/dashboard'),
-          request('/api/analytics/interactions?limit=300')
+          request(`/api/analytics/interactions?limit=${ANALYTICS_INTERACTIONS_LIMIT}`)
         ]);
 
         if (active) {
@@ -40,7 +41,11 @@ export function useAnalytics() {
   const chartData = useMemo(
     () =>
       interactions.reduce((acc, item) => {
-        const day = new Date(item.timestamp || Date.now()).toLocaleDateString();
+        if (!item.timestamp) {
+          return acc;
+        }
+
+        const day = new Date(item.timestamp).toLocaleDateString();
         const existing = acc.find((entry) => entry.day === day);
         if (existing) {
           existing.interactions += 1;
