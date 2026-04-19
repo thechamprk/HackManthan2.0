@@ -7,6 +7,7 @@ export function useAnalytics() {
   const [interactions, setInteractions] = useState([]);
   const [metrics, setMetrics] = useState(null);
 <<<<<<< HEAD
+<<<<<<< HEAD
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 =======
@@ -41,6 +42,10 @@ export function useAnalytics() {
     }
   };
 >>>>>>> parent of 2a94b12 (chore(frontend): restore API env fallback and memoize analytics fetchMetrics)
+=======
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+>>>>>>> parent of 0a258d2 (fix-missing-axios-dependency)
 
   useEffect(() => {
     let active = true;
