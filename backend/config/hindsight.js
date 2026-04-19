@@ -1,13 +1,14 @@
 const DEFAULT_TIMEOUT_MS = 8000;
+const { logger } = require('../middleware/logger');
 
 function createHindsightClient() {
   const apiKey = process.env.HINDSIGHT_API_KEY;
   const bankId = process.env.HINDSIGHT_INSTANCE_ID || 'hackmanthan';
 
   if (!apiKey) {
-    console.warn('[Hindsight] Missing HINDSIGHT_API_KEY. Using no-op fallback mode.');
+    logger.warn('Missing HINDSIGHT_API_KEY. Using no-op fallback mode.');
     return {
-      store: async ({ data }) => ({ id: `mock_${Date.now()}`, source: 'fallback' }),
+      store: async (_payload) => ({ id: `mock_${Date.now()}`, source: 'fallback' }),
       retrieve: async () => ({ results: [], source: 'fallback' }),
       update: async ({ id }) => ({ id, source: 'fallback' })
     };

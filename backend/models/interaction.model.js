@@ -8,7 +8,7 @@ const interactionSchema = z.object({
   agent_response: z.string().min(1),
   effectiveness_score: z.number().min(0).max(1),
   confidence_score: z.number().min(0).max(1).optional(),
-  timestamp: z.date(),
+  timestamp: z.union([z.date(), z.string()]),
   tags: z.array(z.string()).default([]),
   metadata: z.record(z.any()).optional()
 });
@@ -16,7 +16,14 @@ const interactionSchema = z.object({
 const supportRequestSchema = z.object({
   customer_id: z.string().min(1, 'customer_id is required'),
   message: z.string().trim().min(1, 'message is required').max(4000, 'message too long'),
-  conversation_context: z.array(z.record(z.any())).optional()
+  conversation_context: z
+    .array(
+      z.object({
+        role: z.string().optional(),
+        content: z.string().optional()
+      })
+    )
+    .optional()
 });
 
 module.exports = {
