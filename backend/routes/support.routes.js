@@ -1,0 +1,55 @@
+const express = require('express');
+const { z } = require('zod');
+const { handleCustomerInquiry } = require('../services/agent.service');
+const { supportRequestSchema } = require('../models/interaction.model');
+
+const router = express.Router();
+
+function sanitizeMessage(input) {
+  return String(input || '')
+    .replace(/<[^>]*>?/gm, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+router.post('/', async (req, res, next) => {
+  try {
+    const parsed = supportRequestSchema.parse({
+      ...req.body,
+      message: sanitizeMessage(req.body?.message)
+    });
+
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[SupportRoute] Incoming support request', {
+        customer_id: parsed.customer_id,
+        message_preview: parsed.message.slice(0, 80)
+      });
+    }
+
+    const result = await handleCustomerInquiry(
+      parsed.customer_id,
+      parsed.message,
+      parsed.conversation_context || []
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: 'Invalid request body',
+          details: error.flatten()
+        }
+      });
+    }
+
+    error.statusCode = error.statusCode || 500;
+    return next(error);
+  }
+});
+
+module.exports = router;

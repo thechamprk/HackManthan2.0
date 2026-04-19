@@ -75,7 +75,7 @@ HackManthan2.0/
 
 ## Environment Variables
 
-Copy .env.example and set real keys:
+Copy .env and set real keys:
 
 ```
 HINDSIGHT_API_KEY=
