@@ -1,10 +1,12 @@
 const NodeCache = require('node-cache');
-const { createHindsightClient } = require('../config/hindsight');
+const { getHindsightInstance } = require('../config/hindsight');
 const { interactionSchema } = require('../models/interaction.model');
+const { logger } = require('../middleware/logger');
+const { HINDSIGHT_CONTEXT_ID, MAX_SIMILAR_CASES } = require('../utils/constants');
 
-const hindsight = createHindsightClient();
+const hindsight = getHindsightInstance();
 const memoryCache = new NodeCache({ stdTTL: 60, checkperiod: 120 });
-const CONTEXT_ID = 'support-agent-v1';
+const CONTEXT_ID = HINDSIGHT_CONTEXT_ID;
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -47,30 +49,27 @@ function normalizeInteractionRecord(item = {}) {
   };
 }
 
-async function withRetry(action, maxRetries = 2) {
-  let attempt = 0;
-
+async function withRetry(action, maxRetries = 3) {
   function isKnownInfraCapacityError(error) {
     const text = String(error?.message || '').toLowerCase();
     return text.includes('out of shared memory') || text.includes('max_locks_per_transaction');
   }
 
-  while (true) {
+  for (let attempt = 0; attempt < maxRetries; attempt += 1) {
     try {
       return await action();
     } catch (error) {
-      attempt += 1;
-      const canRetry = attempt <= maxRetries;
+      const finalAttempt = attempt >= maxRetries - 1;
       const retryable =
         (!error.statusCode || error.statusCode >= 500 || error.name === 'AbortError') &&
         !isKnownInfraCapacityError(error);
 
-      if (!canRetry || !retryable) {
+      if (finalAttempt || !retryable) {
         throw error;
       }
 
       const delayMs = 200 * Math.pow(2, attempt);
-      console.warn(`[HindsightService] retrying after error (attempt ${attempt}/${maxRetries})`, error.message);
+      logger.warn({ attempt: attempt + 1, maxRetries, message: error.message }, 'retrying hindsight request');
       await sleep(delayMs);
     }
   }
@@ -99,17 +98,18 @@ async function storeInteraction(data) {
   try {
     const stored = await withRetry(() => hindsight.store(payload));
 
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('[HindsightService] Stored interaction', {
+    logger.info(
+      {
         interaction_id: enrichedData.interaction_id,
         issue_type: enrichedData.issue_type
-      });
-    }
+      },
+      'stored interaction'
+    );
 
     memoryCache.del(`analytics:all`);
     return stored;
   } catch (err) {
-    console.warn('[HindsightService] store failed, continuing without memory:', err.message);
+    logger.warn({ message: err.message }, 'store failed, continuing without memory');
     return { id: enrichedData.interaction_id || `mock_${Date.now()}`, source: 'fallback' };
   }
 }
@@ -120,7 +120,7 @@ async function storeInteraction(data) {
  * @param {number} limit
  * @returns {Promise<Array<object>>}
  */
-async function retrieve(query, limit = 5) {
+async function retrieve(query, limit = MAX_SIMILAR_CASES) {
   const cacheKey = `retrieve:${query}:${limit}`;
   const cached = memoryCache.get(cacheKey);
 
@@ -144,7 +144,7 @@ async function retrieve(query, limit = 5) {
     memoryCache.set(cacheKey, normalizedResults, 30);
     return normalizedResults;
   } catch (err) {
-    console.warn('[HindsightService] recall failed, continuing without memory:', err.message);
+    logger.warn({ message: err.message }, 'recall failed, continuing without memory');
     return [];
   }
 }
@@ -196,11 +196,40 @@ async function listInteractions(filters = {}) {
   });
 }
 
+async function getMetrics() {
+  const interactions = await listInteractions({ limit: 500 });
+
+  const totals = interactions.reduce(
+    (acc, item) => {
+      acc.total_interactions += 1;
+      acc.total_effectiveness += Number(item.effectiveness_score) || 0;
+      const issueType = item.issue_type || 'general_support';
+      acc.by_issue_type[issueType] = (acc.by_issue_type[issueType] || 0) + 1;
+      return acc;
+    },
+    {
+      total_interactions: 0,
+      total_effectiveness: 0,
+      by_issue_type: {}
+    }
+  );
+
+  return {
+    total_interactions: totals.total_interactions,
+    average_effectiveness:
+      totals.total_interactions > 0
+        ? Number((totals.total_effectiveness / totals.total_interactions).toFixed(2))
+        : 0,
+    by_issue_type: totals.by_issue_type
+  };
+}
+
 module.exports = {
   storeInteraction,
   retrieve,
   updateEffectiveness,
   listInteractions,
+  getMetrics,
   normalizeIssueType,
   buildTags
 };

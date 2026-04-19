@@ -1,137 +1,96 @@
-import { useMemo, useRef, useState } from 'react';
-import MemoryContext from './MemoryContext';
+import { useEffect, useRef, useState } from 'react';
+import MessageItem from './MessageItem';
+import LoadingSpinner from './LoadingSpinner';
+import { useChat } from '../hooks/useChat';
 
-const API_URL = import.meta.env.VITE_API_URL || import.meta.env.REACT_APP_API_URL || 'http://localhost:3000';
+function ChatInterface({ customerId = '', onMemoryUpdate }) {
+  const [draft, setDraft] = useState('');
+  const [localCustomerId, setLocalCustomerId] = useState(customerId);
+  const activeCustomerId = customerId || localCustomerId;
+  const { messages, sendMessage, clearChat, markInteractionResolved, isLoading, error, memory, resolvedIds } =
+    useChat(activeCustomerId);
+  const bottomRef = useRef(null);
 
-function formatTime(isoDate) {
-  return new Date(isoDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isLoading]);
 
-function ChatInterface({ customerId }) {
-  const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [lastMetadata, setLastMetadata] = useState(null);
-  const messageEndRef = useRef(null);
-
-  const conversationContext = useMemo(
-    () =>
-      messages.map((m) => ({
-        role: m.role === 'agent' ? 'assistant' : 'user',
-        content: m.content
-      })),
-    [messages]
-  );
-
-  async function sendSupportMessage(content) {
-    if (!content.trim() || loading) return;
-
-    const userMessage = {
-      id: `u_${Date.now()}`,
-      role: 'user',
-      content: content.trim(),
-      timestamp: new Date().toISOString()
-    };
-
-    const nextContext = [...conversationContext, { role: 'user', content: userMessage.content }];
-    setMessages((prev) => [...prev, userMessage]);
-    setMessage('');
-    setLoading(true);
-
-    try {
-      const response = await fetch(`${API_URL}/api/support`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customer_id: customerId,
-          customerId,
-          message: userMessage.content,
-          conversation_context: nextContext,
-          conversationContext: nextContext
-        })
-      });
-
-      const payload = await response.json();
-      if (!response.ok || !payload.success) throw new Error(payload?.error?.message || 'Failed');
-
-      const data = payload.data;
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: data.interaction_id || `a_${Date.now()}`,
-          role: 'agent',
-          content: data.agent_response || 'No response',
-          timestamp: new Date().toISOString(),
-          provider: data.provider || 'agent',
-          confidence: Number(data.confidence_score ?? 0)
-        }
-      ]);
-      setLastMetadata(data);
-    } catch (error) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `e_${Date.now()}`,
-          role: 'agent',
-          content: `Error: ${error.message}`,
-          timestamp: new Date().toISOString(),
-          provider: 'system',
-          confidence: 0
-        }
-      ]);
-    } finally {
-      setLoading(false);
-      setTimeout(() => messageEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+  useEffect(() => {
+    if (onMemoryUpdate) {
+      onMemoryUpdate(memory);
     }
+  }, [memory, onMemoryUpdate]);
+
+  async function onSubmit(event) {
+    event.preventDefault();
+    if (!draft.trim()) return;
+    await sendMessage(draft);
+    setDraft('');
   }
 
   return (
-    <section className="chat-grid">
-      <div className="chat-card">
-        <header className="chat-title">
-          <h2>Support Assistant</h2>
-          <span className="customer-pill">ID: {customerId}</span>
-        </header>
-
-        <div className="chat-body">
-          {messages.length === 0 && <p className="muted">Start by asking your support question.</p>}
-
-          {messages.map((m) => (
-            <article key={m.id} className={`bubble ${m.role === 'user' ? 'bubble-user' : 'bubble-agent'}`}>
-              <p>{m.content}</p>
-              <small>
-                {m.role === 'user' ? 'You' : 'Agent'} · {formatTime(m.timestamp)}
-              </small>
-            </article>
-          ))}
-
-          {loading && (
-            <div className="bubble bubble-agent">
-              Agent is typing<span className="dot">.</span><span className="dot">.</span><span className="dot">.</span>
-            </div>
-          )}
-          <div ref={messageEndRef} />
-        </div>
-
-        <form
-          className="chat-input-row"
-          onSubmit={(e) => {
-            e.preventDefault();
-            sendSupportMessage(message);
-          }}
+    <section className="glass rounded-2xl p-4 md:p-6" aria-label="Support chat">
+      <div className="mb-4 flex flex-wrap items-end gap-2">
+        <label className="text-xs text-slate-300" htmlFor="customer-id-input">
+          Customer ID
+        </label>
+        <input
+          id="customer-id-input"
+          aria-label="Customer ID"
+          value={activeCustomerId}
+          onChange={(event) => setLocalCustomerId(event.target.value)}
+          disabled={Boolean(customerId)}
+          className="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm"
+          placeholder="cust_001"
+        />
+        <button
+          type="button"
+          onClick={clearChat}
+          className="ml-auto rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm hover:bg-white/10"
         >
-          <input
-            placeholder="Describe your issue..."
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-          />
-          <button className="btn-primary" type="submit" disabled={loading}>
-            Send
-          </button>
-        </form>
+          Clear chat
+        </button>
       </div>
 
-      <MemoryContext memory={lastMetadata?.hindsight_memory_used} />
+      <div className="mb-4 max-h-[55vh] overflow-y-auto pr-1">
+        {messages.length === 0 ? (
+          <p className="text-sm text-slate-400">Start by asking a support question.</p>
+        ) : (
+          messages.map((item) => (
+            <MessageItem
+              key={item.id}
+              item={item}
+              resolved={resolvedIds[item.interactionId]}
+              onQuickReply={(text) => sendMessage(text)}
+              onResolve={markInteractionResolved}
+            />
+          ))
+        )}
+        {isLoading && <LoadingSpinner label="Thinking…" />}
+        <div ref={bottomRef} />
+      </div>
+
+      {error ? <p className="mb-2 text-sm text-rose-300">{error}</p> : null}
+      {!activeCustomerId ? <p className="mb-2 text-sm text-amber-300">Enter a customer ID to enable sending.</p> : null}
+
+      <form className="flex gap-2" onSubmit={onSubmit}>
+        <textarea
+          aria-label="Message input"
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          rows={2}
+          className="min-h-[44px] flex-1 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm"
+          placeholder="Describe your issue"
+          disabled={isLoading}
+        />
+        <button
+          type="submit"
+          disabled={isLoading || !draft.trim() || !activeCustomerId}
+          className="rounded-lg bg-[var(--purple)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+        >
+          Send
+        </button>
+      </form>
     </section>
   );
 }
