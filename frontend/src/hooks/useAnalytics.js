@@ -40,12 +40,7 @@ export function useAnalytics() {
     } finally {
       setIsLoading(false);
     }
-  };
->>>>>>> parent of 2a94b12 (chore(frontend): restore API env fallback and memoize analytics fetchMetrics)
-=======
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
->>>>>>> parent of 0a258d2 (fix-missing-axios-dependency)
+  }, []);
 
   useEffect(() => {
     let active = true;

@@ -1,31 +1,35 @@
-const APP_NAME = 'Hindsight Expert';
-const HINDSIGHT_CONTEXT_ID = 'support-agent-v1';
-const MAX_SIMILAR_CASES = 5;
-const SUPPORT_SIMILAR_CASE_LIMIT = MAX_SIMILAR_CASES;
-const GROQ_MODEL = process.env.GROQ_MODEL || 'mixtral-8x7b-32768';
-const GROQ_TIMEOUT_MS = 30000;
-const MAX_MESSAGE_LENGTH = 5000;
-const CONFIDENCE_THRESHOLD = 0.6;
-
-const HTTP_STATUS = {
-  OK: 200,
-  CREATED: 201,
-  BAD_REQUEST: 400,
-  UNAUTHORIZED: 401,
-  FORBIDDEN: 403,
-  NOT_FOUND: 404,
-  INTERNAL_SERVER_ERROR: 500,
-  SERVICE_UNAVAILABLE: 503
+const ROUTES = {
+  LANDING: '/',
+  HOME: '/app',
+  DASHBOARD: '/dashboard',
+  DOCS: '/docs'
 };
 
-module.exports = {
-  APP_NAME,
-  HINDSIGHT_CONTEXT_ID,
-  MAX_SIMILAR_CASES,
-  SUPPORT_SIMILAR_CASE_LIMIT,
-  GROQ_MODEL,
-  GROQ_TIMEOUT_MS,
-  MAX_MESSAGE_LENGTH,
-  CONFIDENCE_THRESHOLD,
-  HTTP_STATUS
+const ISSUE_TYPES = {
+  PASSWORD_RESET: 'password_reset',
+  BILLING: 'billing',
+  LOGIN_ISSUE: 'login_issue',
+  TECHNICAL_ERROR: 'technical_error',
+  ACCOUNT_LOCKED: 'account_locked',
+  GENERAL_SUPPORT: 'general_support'
 };
+
+const AGENT_PROVIDERS = {
+  GROQ: 'groq',
+  OPENCLAW: 'openclaw'
+};
+
+const CONFIDENCE_THRESHOLDS = {
+  HIGH: 0.75,
+  MEDIUM: 0.5,
+  LOW: 0.0
+};
+
+const MEMORY = {
+  CACHE_TTL: 60,
+  MAX_RETRIES: 2,
+  RETRY_DELAY_MS: 500,
+  REQUEST_TIMEOUT_MS: 8000
+};
+
+module.exports = { ROUTES, ISSUE_TYPES, AGENT_PROVIDERS, CONFIDENCE_THRESHOLDS, MEMORY };
