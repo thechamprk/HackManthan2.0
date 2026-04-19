@@ -2,32 +2,25 @@ import { create } from 'zustand';
 
 export const useChatStore = create((set) => ({
   messages: [],
-  currentCustomerId: '',
+  customerId: 'user_' + Math.random().toString(36).substr(2, 9),
   isLoading: false,
-  loading: false,
-  error: '',
-  memory: { retrieved_cases: [], patterns_applied: [] },
-  lastMetadata: null,
-  resolvedIds: {},
-  setCurrentCustomerId: (currentCustomerId) => set({ currentCustomerId }),
-  setLoading: (loading) => set({ loading, isLoading: loading }),
-  setError: (error) => set({ error }),
-  setMemory: (memory) => set({ memory }),
-  addMessage: (message) => set((state) => ({ messages: [...state.messages, message] })),
-  setLastMetadata: (lastMetadata) => set({ lastMetadata }),
-  markResolved: (interactionId) =>
+  error: null,
+  memoryContext: null,
+
+  addMessage: (message) =>
     set((state) => ({
-      resolvedIds: {
-        ...state.resolvedIds,
-        [interactionId]: true
-      }
+      messages: [...state.messages, message]
     })),
-  clearChat: () =>
-    set({
-      messages: [],
-      error: '',
-      memory: { retrieved_cases: [], patterns_applied: [] },
-      lastMetadata: null,
-      resolvedIds: {}
-    })
+
+  setLoading: (isLoading) => set({ isLoading }),
+
+  setError: (error) => set({ error }),
+
+  setMemoryContext: (context) => set({ memoryContext: context }),
+
+  clearChat: () => set({ messages: [], error: null, memoryContext: null }),
+
+  setMessages: (messages) => set({ messages })
 }));
+
+export default useChatStore;
