@@ -26,6 +26,9 @@ function Home({ search, onNavigate }) {
             <span className="live-dot" />
             Live
           </span>
+          <button className="btn-secondary" onClick={() => onNavigate(`/insights${search || ''}`)}>
+            iNSIGHTS
+          </button>
           <button className="btn-secondary" onClick={() => onNavigate('/')}>
             Logout
           </button>

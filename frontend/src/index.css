@@ -134,9 +134,23 @@ footer { padding:1.5rem 2.5rem; text-align:center; border-top:1px solid #e8e8e8;
 .dot:nth-child(3) { animation-delay: .3s; }
 @keyframes blink { 0%,100% { opacity:.2; } 50% { opacity:1; } }
 
+.insights-grid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:1rem; }
+.insights-card { background:#fff; border:1px solid #e8e8e8; border-radius:12px; padding:1rem; }
+.insights-card h3 { font-family:'Playfair Display', serif; margin-bottom:.75rem; }
+.insights-form { display:flex; flex-direction:column; gap:.5rem; margin-bottom:.75rem; }
+.insights-form input { width:100%; border:1px solid #dcdcdc; border-radius:8px; padding:.65rem .75rem; }
+.insights-list { max-height:220px; overflow:auto; display:flex; flex-direction:column; gap:.5rem; }
+.insights-list-item {
+  text-align:left; border:1px solid #e8e8e8; border-radius:8px; padding:.6rem .7rem; background:#fcfcfc; cursor:pointer;
+}
+.insights-list-item.active { border-color:#1D9E75; background:#E1F5EE; }
+.insights-actions { display:flex; gap:.5rem; flex-wrap:wrap; }
+.steps-list { margin: .4rem 0 0 1rem; color:#555; }
+
 @media (max-width: 900px) {
   .chat-grid { grid-template-columns: 1fr; }
   .stats-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .insights-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 600px) {
   .hero h1 { font-size:36px; }
