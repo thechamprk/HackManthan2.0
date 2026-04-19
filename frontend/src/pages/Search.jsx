@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { searchApi } from '../services/api';
 import { aiSearchSummary } from '../services/groq';
 
@@ -9,14 +9,13 @@ function Search() {
   const [type, setType] = useState('all');
   const [results, setResults] = useState([]);
   const [summary, setSummary] = useState('');
-
-  const recent = useMemo(() => {
+  const [recent, setRecent] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('insights_recent_searches') || '[]');
     } catch (_error) {
       return [];
     }
-  }, [results]);
+  });
 
   async function runSearch(value = query, currentType = type) {
     if (!value.trim()) return;
@@ -28,6 +27,7 @@ function Search() {
 
     const nextRecent = [value.trim(), ...recent.filter((item) => item !== value.trim())].slice(0, 5);
     localStorage.setItem('insights_recent_searches', JSON.stringify(nextRecent));
+    setRecent(nextRecent);
   }
 
   return (

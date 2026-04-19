@@ -82,14 +82,21 @@ router.post('/breakdown', async (req, res) => {
         estimatedMinutes: index === 0 ? 45 : 25
       }));
 
-    const normalized = (data && data.length ? data : fallback.length ? fallback : [
-      {
-        text: `Plan first action for: ${parsed.goal}`,
-        tag: 'planning',
-        priority: 'high',
-        estimatedMinutes: 30
-      }
-    ]).map((item) => ({
+    let selected = data;
+    if (!Array.isArray(selected) || selected.length === 0) {
+      selected = fallback.length
+        ? fallback
+        : [
+            {
+              text: `Plan first action for: ${parsed.goal}`,
+              tag: 'planning',
+              priority: 'high',
+              estimatedMinutes: 30
+            }
+          ];
+    }
+
+    const normalized = selected.map((item) => ({
       text: String(item.text || '').trim() || 'Untitled task',
       tag: String(item.tag || 'general').trim(),
       priority: ['high', 'medium', 'low'].includes(String(item.priority))
@@ -142,9 +149,11 @@ router.post('/search-summary', async (req, res) => {
   try {
     const parsed = summarySchema.parse(req.body || {});
 
+    const safeResults = Array.isArray(parsed.results) ? parsed.results.slice(0, 20) : [];
+
     const response = await generateResponse(
       'Summarize search results in 2-3 sentences. Keep it concise and actionable.',
-      `Query: ${parsed.query}\nResults: ${JSON.stringify(parsed.results).slice(0, 5000)}`,
+      `Query: ${parsed.query}\nResults: ${JSON.stringify(safeResults)}`,
       0.2,
       { model: GROQ_MODEL }
     );

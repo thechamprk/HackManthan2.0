@@ -1,7 +1,6 @@
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 function Sidebar({ customerId, customerName = 'Guest' }) {
-  const location = useLocation();
   const query = new URLSearchParams({ customerId, name: customerName }).toString();
 
   const links = [
@@ -22,9 +21,7 @@ function Sidebar({ customerId, customerName = 'Guest' }) {
             <NavLink
               key={item.to}
               to={`${item.to}?${query}`}
-              className={({ isActive }) =>
-                `sidebar-link${isActive || location.pathname === item.to ? ' active' : ''}`
-              }
+              className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}
             >
               {item.label}
             </NavLink>
