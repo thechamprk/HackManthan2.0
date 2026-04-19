@@ -1,9 +1,0 @@
-.page-shell {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.page-main {
-  flex: 1;
-}

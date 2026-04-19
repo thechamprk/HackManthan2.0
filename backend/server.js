@@ -5,11 +5,10 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const morgan = require('morgan');
 
 const supportRoutes = require('./routes/support.routes');
 const analyticsRoutes = require('./routes/analytics.routes');
-const { requestLogger, logger } = require('./middleware/logger');
-const { notFoundHandler, errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -24,7 +23,7 @@ app.use(
 );
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
-app.use(requestLogger);
+app.use(morgan(NODE_ENV === 'production' ? 'combined' : 'dev'));
 
 app.get('/', (_req, res) => {
   res.status(200).json({
@@ -37,35 +36,62 @@ app.get('/', (_req, res) => {
 app.use('/api/support', supportRoutes);
 app.use('/api/analytics', analyticsRoutes);
 
-app.use(notFoundHandler);
-app.use(errorHandler);
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    error: {
+      message: `Route not found: ${req.method} ${req.originalUrl}`
+    }
+  });
+});
+
+app.use((err, _req, res, _next) => {
+  const statusCode = err.statusCode || 500;
+  const isDev = NODE_ENV !== 'production';
+
+  if (isDev) {
+    console.error('[GlobalErrorHandler]', {
+      message: err.message,
+      stack: err.stack,
+      statusCode
+    });
+  }
+
+  res.status(statusCode).json({
+    success: false,
+    error: {
+      message: err.publicMessage || err.message || 'Internal server error',
+      ...(isDev ? { details: err.stack } : {})
+    }
+  });
+});
 
 if (require.main === module) {
   const MAX_PORT_TRIES = 10;
 
-  const startServer = (startPort, attempt = 0) => {
+  function startServer(startPort, attempt = 0) {
     const targetPort = startPort + attempt;
     const server = app.listen(targetPort, () => {
-      logger.info({ port: targetPort }, 'backend listening');
+      console.log(`[Server] HindsightHub backend listening on port ${targetPort}`);
       if (targetPort !== PORT) {
-        logger.warn({ defaultPort: PORT, activePort: targetPort }, 'default port busy');
+        console.log(`[Server] Default port ${PORT} was busy, using ${targetPort} instead.`);
       }
     });
 
     server.on('error', (error) => {
       if (error.code === 'EADDRINUSE' && attempt < MAX_PORT_TRIES) {
-        logger.warn({ busyPort: targetPort, nextPort: targetPort + 1 }, 'port in use');
+        console.warn(`[Server] Port ${targetPort} is in use. Trying ${targetPort + 1}...`);
         startServer(startPort, attempt + 1);
         return;
       }
 
       if (error.code === 'EADDRINUSE') {
-        logger.error({ retries: MAX_PORT_TRIES + 1, startPort: PORT }, 'failed to bind to port');
+        console.error(`[Server] Failed to bind after ${MAX_PORT_TRIES + 1} attempts starting at ${PORT}.`);
       }
 
       throw error;
     });
-  };
+  }
 
   startServer(PORT);
 }

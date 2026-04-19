@@ -3,10 +3,6 @@ const { z } = require('zod');
 const { handleCustomerInquiry } = require('../services/agent.service');
 const { updateEffectiveness } = require('../services/hindsight.service');
 const { supportRequestSchema } = require('../models/interaction.model');
-const { validateBody, validateParams } = require('../middleware/validator');
-const { successResponse, errorResponse } = require('../utils/response');
-const { HTTP_STATUS } = require('../utils/constants');
-const { logger } = require('../middleware/logger');
 
 const router = express.Router();
 const effectivenessUpdateSchema = z.object({
@@ -20,20 +16,19 @@ function sanitizeMessage(input) {
     .trim();
 }
 
-router.post('/', validateBody(supportRequestSchema), async (req, res, next) => {
+router.post('/', async (req, res, next) => {
   try {
-    const parsed = {
-      ...req.validated.body,
-      message: sanitizeMessage(req.validated.body?.message)
-    };
+    const parsed = supportRequestSchema.parse({
+      ...req.body,
+      message: sanitizeMessage(req.body?.message)
+    });
 
-    logger.info(
-      {
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[SupportRoute] Incoming support request', {
         customer_id: parsed.customer_id,
         message_preview: parsed.message.slice(0, 80)
-      },
-      'incoming support request'
-    );
+      });
+    }
 
     const result = await handleCustomerInquiry(
       parsed.customer_id,
@@ -41,45 +36,54 @@ router.post('/', validateBody(supportRequestSchema), async (req, res, next) => {
       parsed.conversation_context || []
     );
 
-    return res.status(HTTP_STATUS.OK).json(successResponse(result));
-  } catch (error) {
-    error.statusCode = error.statusCode || 500;
-    return next(error);
-  }
-});
-
-router.put(
-  '/:interactionId/effectiveness',
-  validateParams(
-    z.object({
-      interactionId: z.string().min(3, 'interactionId is required')
-    })
-  ),
-  validateBody(effectivenessUpdateSchema),
-  async (req, res, next) => {
-  try {
-    const interactionId = req.validated.params.interactionId;
-    const parsedBody = req.validated.body;
-
-    await updateEffectiveness(interactionId, parsedBody.effectiveness_score);
-
-    return res.status(HTTP_STATUS.OK).json(
-      successResponse({
-        interaction_id: interactionId,
-        effectiveness_score: parsedBody.effectiveness_score
-      })
-    );
+    return res.status(200).json({
+      success: true,
+      data: result
+    });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res
-        .status(HTTP_STATUS.BAD_REQUEST)
-        .json(errorResponse('Invalid request', error.flatten()));
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: 'Invalid request body',
+          details: error.flatten()
+        }
+      });
     }
 
     error.statusCode = error.statusCode || 500;
     return next(error);
   }
-}
-);
+});
+
+router.put('/:interactionId/effectiveness', async (req, res, next) => {
+  try {
+    const interactionId = z.string().min(3, 'interactionId is required').parse(req.params?.interactionId);
+    const parsedBody = effectivenessUpdateSchema.parse(req.body);
+
+    await updateEffectiveness(interactionId, parsedBody.effectiveness_score);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        interaction_id: interactionId,
+        effectiveness_score: parsedBody.effectiveness_score
+      }
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: 'Invalid request',
+          details: error.flatten()
+        }
+      });
+    }
+
+    error.statusCode = error.statusCode || 500;
+    return next(error);
+  }
+});
 
 module.exports = router;

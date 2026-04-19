@@ -1,12 +1,10 @@
 const NodeCache = require('node-cache');
 const { createHindsightClient } = require('../config/hindsight');
 const { interactionSchema } = require('../models/interaction.model');
-const { logger } = require('../middleware/logger');
-const { HINDSIGHT_CONTEXT_ID } = require('../utils/constants');
 
 const hindsight = createHindsightClient();
 const memoryCache = new NodeCache({ stdTTL: 60, checkperiod: 120 });
-const CONTEXT_ID = HINDSIGHT_CONTEXT_ID;
+const CONTEXT_ID = 'support-agent-v1';
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -49,27 +47,30 @@ function normalizeInteractionRecord(item = {}) {
   };
 }
 
-async function withRetry(action, maxRetries = 3) {
+async function withRetry(action, maxRetries = 2) {
+  let attempt = 0;
+
   function isKnownInfraCapacityError(error) {
     const text = String(error?.message || '').toLowerCase();
     return text.includes('out of shared memory') || text.includes('max_locks_per_transaction');
   }
 
-  for (let attempt = 0; attempt < maxRetries; attempt += 1) {
+  while (true) {
     try {
       return await action();
     } catch (error) {
-      const finalAttempt = attempt >= maxRetries - 1;
+      attempt += 1;
+      const canRetry = attempt <= maxRetries;
       const retryable =
         (!error.statusCode || error.statusCode >= 500 || error.name === 'AbortError') &&
         !isKnownInfraCapacityError(error);
 
-      if (finalAttempt || !retryable) {
+      if (!canRetry || !retryable) {
         throw error;
       }
 
       const delayMs = 200 * Math.pow(2, attempt);
-      logger.warn({ attempt: attempt + 1, maxRetries, message: error.message }, 'retrying hindsight request');
+      console.warn(`[HindsightService] retrying after error (attempt ${attempt}/${maxRetries})`, error.message);
       await sleep(delayMs);
     }
   }
@@ -98,18 +99,17 @@ async function storeInteraction(data) {
   try {
     const stored = await withRetry(() => hindsight.store(payload));
 
-    logger.info(
-      {
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[HindsightService] Stored interaction', {
         interaction_id: enrichedData.interaction_id,
         issue_type: enrichedData.issue_type
-      },
-      'stored interaction'
-    );
+      });
+    }
 
     memoryCache.del(`analytics:all`);
     return stored;
   } catch (err) {
-    logger.warn({ message: err.message }, 'store failed, continuing without memory');
+    console.warn('[HindsightService] store failed, continuing without memory:', err.message);
     return { id: enrichedData.interaction_id || `mock_${Date.now()}`, source: 'fallback' };
   }
 }
@@ -144,7 +144,7 @@ async function retrieve(query, limit = 5) {
     memoryCache.set(cacheKey, normalizedResults, 30);
     return normalizedResults;
   } catch (err) {
-    logger.warn({ message: err.message }, 'recall failed, continuing without memory');
+    console.warn('[HindsightService] recall failed, continuing without memory:', err.message);
     return [];
   }
 }
