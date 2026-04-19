@@ -1,6 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
 const { retrieve, storeInteraction, normalizeIssueType, buildTags } = require('./hindsight.service');
-const { generateResponse } = require('./groq.service');
+const { generateResponse } = require('./llm.service');
 
 function summarizeCases(cases) {
   if (!cases.length) {
@@ -81,6 +81,7 @@ async function handleCustomerInquiry(customerId, message, conversationContext = 
 
   const llmResult = await generateResponse(systemPrompt, message, 0.25);
   const agentResponse = llmResult.content;
+  const provider = llmResult.provider || 'groq';
 
   const confidenceScore = calculateConfidence(similarCases, agentResponse);
   const avgEffectiveness = averageEffectiveness(similarCases);
@@ -102,7 +103,8 @@ async function handleCustomerInquiry(customerId, message, conversationContext = 
     metadata: {
       similar_case_count: similarCases.length,
       patterns_applied: patternsApplied,
-      conversation_turns: Array.isArray(conversationContext) ? conversationContext.length : 0
+      conversation_turns: Array.isArray(conversationContext) ? conversationContext.length : 0,
+      provider
     }
   };
 
@@ -118,6 +120,7 @@ async function handleCustomerInquiry(customerId, message, conversationContext = 
     similar_past_cases: similarCases.length,
     avg_effectiveness: avgEffectiveness,
     interaction_id: interactionId,
+    provider,
     hindsight_memory_used: {
       retrieved_cases: similarCases.slice(0, 5),
       patterns_applied: patternsApplied

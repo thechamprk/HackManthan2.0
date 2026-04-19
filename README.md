@@ -41,7 +41,7 @@ HackManthan2.0/
 		tailwind.config.js
 		postcss.config.js
 		vite.config.js
-	.env.example
+	.env
 	.gitignore
 	README.md
 ```
@@ -75,22 +75,28 @@ HackManthan2.0/
 
 ## Environment Variables
 
-Copy .env and set real keys:
+Use the root .env file and set real keys:
 
 ```
 HINDSIGHT_API_KEY=
 HINDSIGHT_INSTANCE_ID=
 GROQ_API_KEY=
 GROQ_MODEL=mixtral-8x7b-32768
+AGENT_PROVIDER=groq
+OPENCLAW_BASE_URL=http://localhost:3001
+OPENCLAW_CHAT_ENDPOINT=/v1/chat/completions
+OPENCLAW_API_KEY=
+OPENCLAW_MODEL=openclaw
 PORT=3000
 NODE_ENV=development
-REACT_APP_API_URL=http://localhost:3000
+VITE_API_URL=http://localhost:3000
 CORS_ORIGIN=*
 ```
 
 Notes:
 - If Hindsight keys are missing, backend runs in fallback no-op memory mode.
 - If GROQ_API_KEY is missing, agent returns safe fallback responses.
+- Set AGENT_PROVIDER=openclaw to route generation through OpenClaw.
 
 ## Local Setup
 
