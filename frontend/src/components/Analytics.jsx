@@ -1,11 +1,31 @@
-import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import React, { useEffect, useState } from 'react';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import styles from '../styles/Analytics.module.css';
+import { analytics } from '../utils/api';
 import LoadingSpinner from './LoadingSpinner';
-import { useAnalytics } from '../hooks/useAnalytics';
 
 export default function Analytics() {
-  const { dashboard, isLoading, error, fetchDashboard } = useAnalytics();
+  const [dashboard, setDashboard] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
+
+  const fetchDashboard = async () => {
+    try {
+      setIsLoading(true);
+      const response = await analytics.getDashboard();
+      setDashboard(response?.data || response);
+      setError(null);
+    } catch (err) {
+      setError(err.message || 'Failed to load analytics');
+      console.error('Error fetching analytics:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (isLoading) return <LoadingSpinner message="Loading analytics..." />;
   if (error) return <div className={styles['error-message']}>Error: {error}</div>;

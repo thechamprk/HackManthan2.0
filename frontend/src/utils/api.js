@@ -1,53 +1,45 @@
-import { API_URL, REQUEST_TIMEOUT_MS } from './constants';
+import axios from 'axios';
+import { API_URL } from './constants';
 
-const fetchWithTimeout = async (url, options = {}) => {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-
-  try {
-    return await fetch(url, { ...options, signal: controller.signal });
-  } catch (error) {
-    if (error?.name === 'AbortError') {
-      throw new Error(`Request timeout after ${REQUEST_TIMEOUT_MS}ms`);
-    }
-    throw error;
-  } finally {
-    clearTimeout(timeoutId);
+const api = axios.create({
+  baseURL: API_URL,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json'
   }
-};
+});
 
-const handleResponse = async (response) => {
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.error?.message || `HTTP ${response.status}`);
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const message =
+      error?.response?.data?.error?.message ||
+      error?.message ||
+      'Unexpected network error';
+    return Promise.reject(new Error(message));
   }
-  return response.json();
-};
+);
+
+export async function request(path, options = {}) {
+  const response = await api.request({ url: path, ...options });
+  return response.data;
+}
 
 export const support = {
-  sendMessage: async (customerId, message, context = []) => {
-    const response = await fetchWithTimeout(`${API_URL}/api/support`, {
+  sendMessage: async (customerId, message, context = []) =>
+    request('/api/support', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+      data: {
         customer_id: customerId,
         message,
         conversation_context: context
-      })
-    });
-    return handleResponse(response);
-  }
+      }
+    })
 };
 
 export const analytics = {
-  getDashboard: async () => {
-    const response = await fetchWithTimeout(`${API_URL}/api/analytics/dashboard`);
-    return handleResponse(response);
-  },
-  getMetrics: async () => {
-    const response = await fetchWithTimeout(`${API_URL}/api/analytics/metrics`);
-    return handleResponse(response);
-  }
+  getDashboard: async () => request('/api/analytics/dashboard'),
+  getMetrics: async () => request('/api/analytics/metrics')
 };
 
-export default { support, analytics };
+export default api;

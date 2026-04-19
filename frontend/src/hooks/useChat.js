@@ -1,69 +1,133 @@
-import { useCallback } from 'react';
-import { support } from '../utils/api';
-import useChatStore from '../context/ChatContext';
+import { useMemo } from 'react';
+import { useChatStore } from '../context/ChatContext';
+import { request, support } from '../utils/api';
+import { CHAT_MESSAGES_LIMIT } from '../utils/constants';
 
-export const useChat = () => {
-  const { messages, addMessage, setLoading, setError, clearChat, setMemoryContext } = useChatStore();
-  const customerId = useChatStore((state) => state.customerId);
-  const isLoading = useChatStore((state) => state.isLoading);
-  const error = useChatStore((state) => state.error);
-
-  const sendMessage = useCallback(
-    async (text) => {
-      if (!text.trim()) return;
-
-      const userMessage = {
-        id: Date.now(),
-        text,
-        isUser: true,
-        timestamp: new Date().toISOString()
-      };
-
-      addMessage(userMessage);
-      setLoading(true);
-      setError(null);
-
-      try {
-        const context = messages.map((message) => ({
-          role: message.isUser ? 'user' : 'assistant',
-          content: message.text
-        }));
-        const response = await support.sendMessage(customerId, text, context);
-
-        const payload = response?.data || response;
-
-        const agentMessage = {
-          id: Date.now() + 1,
-          text: payload.agent_response,
-          isUser: false,
-          timestamp: new Date().toISOString(),
-          metadata: {
-            confidence: payload.confidence_score,
-            similarCases: payload.similar_past_cases,
-            patterns: payload.hindsight_memory_used?.patterns_applied || []
-          }
-        };
-
-        addMessage(agentMessage);
-        setMemoryContext(payload.hindsight_memory_used);
-      } catch (err) {
-        setError(err.message || 'Failed to send message');
-        console.error('Error:', err);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [customerId, messages, addMessage, setLoading, setError, setMemoryContext]
-  );
-
+function createUserMessage(content) {
   return {
+    id: `u_${Date.now()}`,
+    role: 'user',
+    content: content.trim(),
+    timestamp: new Date().toISOString()
+  };
+}
+
+function createSystemError(message) {
+  return {
+    id: `err_${Date.now()}`,
+    role: 'agent',
+    content: `I could not complete that request: ${message}`,
+    timestamp: new Date().toISOString(),
+    confidence: 0,
+    provider: 'system'
+  };
+}
+
+export function useChat(customerId) {
+  const {
     messages,
-    sendMessage,
-    clearChat,
+    loading,
     isLoading,
     error,
-    customerId
-  };
-};
+    memory,
+    currentCustomerId,
+    lastMetadata,
+    resolvedIds,
+    addMessage,
+    setCurrentCustomerId,
+    setError,
+    setMemory,
+    setLoading,
+    setLastMetadata,
+    markResolved,
+    clearChat
+  } = useChatStore();
 
-export default useChat;
+  const activeCustomerId = customerId || currentCustomerId;
+
+  const conversationContext = useMemo(
+    () =>
+      messages.map((message) => ({
+        role: message.role === 'agent' ? 'assistant' : 'user',
+        content: message.content
+      })),
+    [messages]
+  );
+  const visibleMessages = useMemo(() => messages.slice(-CHAT_MESSAGES_LIMIT), [messages]);
+
+  async function sendSupportMessage(content) {
+    if (!content.trim() || loading) return;
+    if (!activeCustomerId) {
+      setError('customerId is required');
+      return;
+    }
+
+    const userMessage = createUserMessage(content);
+    addMessage(userMessage);
+    setLoading(true);
+
+    try {
+      const payload = await support.sendMessage(
+        activeCustomerId,
+        userMessage.content,
+        [...conversationContext, { role: 'user', content: userMessage.content }]
+      );
+
+      if (!payload.success) {
+        throw new Error(payload?.error?.message || 'Failed to send message');
+      }
+
+      const data = payload.data;
+      setCurrentCustomerId(activeCustomerId);
+      setError('');
+      setMemory(data.hindsight_memory_used || { retrieved_cases: [], patterns_applied: [] });
+      addMessage({
+        id: data.interaction_id,
+        role: 'agent',
+        interactionId: data.interaction_id,
+        content: data.agent_response || data.agentResponse,
+        timestamp: data.timestamp || new Date().toISOString(),
+        confidence: Number(data.confidence_score ?? data.confidenceScore ?? 0),
+        provider: data.provider || 'agent'
+      });
+      setLastMetadata(data);
+    } catch (error) {
+      setError(error.message);
+      addMessage(createSystemError(error.message));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function markInteractionResolved(interactionId) {
+    if (!interactionId || resolvedIds[interactionId]) return;
+
+    try {
+      const payload = await request(`/api/support/${interactionId}/effectiveness`, {
+        method: 'PUT',
+        data: { effectiveness_score: 1 }
+      });
+
+      if (!payload.success) {
+        throw new Error(payload?.error?.message || 'Failed to mark as resolved');
+      }
+
+      markResolved(interactionId);
+    } catch (error) {
+      addMessage(createSystemError(error.message));
+    }
+  }
+
+  return {
+    messages: visibleMessages,
+    isLoading: isLoading || loading,
+    error,
+    memory,
+    lastMetadata,
+    resolvedIds,
+    sendMessage: sendSupportMessage,
+    sendSupportMessage,
+    clearChat,
+    markInteractionResolved
+  };
+}
