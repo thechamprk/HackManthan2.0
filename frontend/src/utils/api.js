@@ -1,45 +1,37 @@
-import axios from 'axios';
-import { API_URL } from './constants';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-const api = axios.create({
-  baseURL: API_URL,
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json'
+const handleResponse = async (response) => {
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error?.message || `HTTP ${response.status}`);
   }
-});
-
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    const message =
-      error?.response?.data?.error?.message ||
-      error?.message ||
-      'Unexpected network error';
-    return Promise.reject(new Error(message));
-  }
-);
-
-export async function request(path, options = {}) {
-  const response = await api.request({ url: path, ...options });
-  return response.data;
-}
+  return response.json();
+};
 
 export const support = {
-  sendMessage: async (customerId, message, context = []) =>
-    request('/api/support', {
+  sendMessage: async (customerId, message, context = []) => {
+    const response = await fetch(`${API_URL}/api/support`, {
       method: 'POST',
-      data: {
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         customer_id: customerId,
         message,
         conversation_context: context
-      }
-    })
+      })
+    });
+    return handleResponse(response);
+  }
 };
 
 export const analytics = {
-  getDashboard: async () => request('/api/analytics/dashboard'),
-  getMetrics: async () => request('/api/analytics/metrics')
+  getDashboard: async () => {
+    const response = await fetch(`${API_URL}/api/analytics/dashboard`);
+    return handleResponse(response);
+  },
+  getMetrics: async () => {
+    const response = await fetch(`${API_URL}/api/analytics/metrics`);
+    return handleResponse(response);
+  }
 };
 
-export default api;
+export default { support, analytics };
