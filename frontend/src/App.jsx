@@ -31,23 +31,19 @@ class ErrorBoundary extends Component {
   }
 }
 
-function App() {
+export default function App() {
   return (
-    <ErrorBoundary>
-      <div className="min-h-screen bg-app-gradient">
-        <header className="border-b border-slate-200/70 bg-white/70 backdrop-blur">
-          <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 md:px-6 lg:px-8">
-            <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-slate-500">HackManthan Project</p>
-              <h1 className="text-2xl font-black text-slate-900">HindsightHub</h1>
-            </div>
-            <p className="text-sm text-slate-600">AI Support Agent with Persistent Memory</p>
+    <div>
+      <header className="border-b border-slate-200 bg-white/90 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 md:px-6 lg:px-8">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">HindsightHub</p>
+            <h1 className="font-['Manrope'] text-xl font-bold text-slate-900">Support Operations Console</h1>
           </div>
-        </header>
-        <Home />
-      </div>
-    </ErrorBoundary>
+          <p className="text-sm text-slate-600">Customer support with memory-backed context</p>
+        </div>
+      </header>
+      <Home />
+    </div>
   );
 }
-
-export default App;

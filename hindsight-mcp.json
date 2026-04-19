@@ -1,0 +1,11 @@
+{
+  "servers": {
+    "hindsight": {
+      "type": "http",
+      "url": "https://api.hindsight.vectorize.io/mcp/hackmanthan2/",
+      "headers": {
+        "Authorization": "Bearer hsk_15b032fd64cfde0366a190542198a981_a6b9287658eaf95e"
+      }
+    }
+  }
+}

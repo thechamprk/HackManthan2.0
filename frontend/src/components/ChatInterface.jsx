@@ -1,167 +1,271 @@
-import { useMemo, useRef, useState } from 'react';
-import MemoryContext from './MemoryContext';
+import { useState, useRef, useEffect } from 'react';
 
-const API_URL = import.meta.env.VITE_API_URL || import.meta.env.REACT_APP_API_URL || 'http://localhost:3000';
+const API = import.meta.env.VITE_API_URL || import.meta.env.REACT_APP_API_URL || 'http://localhost:3000';
 
-function formatTime(isoDate) {
-  return new Date(isoDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
-
-function ChatInterface() {
-  const [customerId, setCustomerId] = useState('cust_demo_001');
-  const [message, setMessage] = useState('');
+export default function ChatInterface({ onMemoryUpdate }) {
   const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [customerId, setCustomerId] = useState('cust_demo_001');
   const [loading, setLoading] = useState(false);
-  const [lastMetadata, setLastMetadata] = useState(null);
-  const messageEndRef = useRef(null);
+  const bottomRef = useRef(null);
 
-  const conversationContext = useMemo(
-    () =>
-      messages.map((m) => ({
-        role: m.role === 'agent' ? 'assistant' : 'user',
-        content: m.content
-      })),
-    [messages]
-  );
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, loading]);
 
-  async function sendMessage(event) {
-    event.preventDefault();
-    if (!message.trim() || loading) return;
+  async function send() {
+    const text = input.trim();
+    if (!text || loading) return;
 
-    const userMessage = {
-      id: `u_${Date.now()}`,
-      role: 'user',
-      content: message.trim(),
-      timestamp: new Date().toISOString()
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    setMessage('');
+    const userMsg = { role: 'user', content: text, ts: Date.now() };
+    setMessages(prev => [...prev, userMsg]);
+    setInput('');
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/support`, {
+      const res = await fetch(`${API}/api/support`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           customer_id: customerId,
-          message: userMessage.content,
-          conversation_context: conversationContext
+          message: text,
+          conversation_context: messages.slice(-6)
         })
       });
-
-      const payload = await response.json();
-      if (!response.ok || !payload.success) {
-        throw new Error(payload?.error?.message || 'Failed to send message');
+      const json = await res.json();
+      if (!res.ok || !json?.success) {
+        throw new Error(json?.error?.message || 'Support request failed');
       }
+      const d = json.data || json;
 
-      const data = payload.data;
-      const agentMessage = {
-        id: data.interaction_id,
+      const agentMsg = {
         role: 'agent',
-        content: data.agent_response,
-        timestamp: new Date().toISOString(),
-        confidence: data.confidence_score
+        content: d.agent_response,
+        confidence: d.confidence_score,
+        cases: d.similar_past_cases,
+        provider: d.provider,
+        ts: Date.now()
       };
-
-      setMessages((prev) => [...prev, agentMessage]);
-      setLastMetadata(data);
-    } catch (error) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `err_${Date.now()}`,
-          role: 'agent',
-          content: `I could not complete that request: ${error.message}`,
-          timestamp: new Date().toISOString(),
-          confidence: 0
-        }
-      ]);
+      setMessages(prev => [...prev, agentMsg]);
+      if (onMemoryUpdate) onMemoryUpdate(d.hindsight_memory_used);
+    } catch (e) {
+      setMessages(prev => [...prev, {
+        role: 'agent',
+        content: `Something went wrong: ${e.message || 'Please try again.'}`,
+        ts: Date.now()
+      }]);
     } finally {
       setLoading(false);
-      setTimeout(() => messageEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
     }
   }
 
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+  }
+
+  const confColor = (c) => {
+    if (!c) return 'var(--muted)';
+    if (c >= 0.75) return 'var(--success)';
+    if (c >= 0.5) return 'var(--accent3)';
+    return '#fc8181';
+  };
+
   return (
-    <section className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
-      <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-soft md:p-6">
-        <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">HindsightHub Support Agent</h1>
-            <p className="text-sm text-slate-600">AI support with persistent memory and contextual learning.</p>
-          </div>
-          <label className="flex items-center gap-2 text-sm text-slate-700" htmlFor="customer-id">
-            Customer ID
-            <input
-              id="customer-id"
-              aria-label="Customer identifier"
-              className="rounded-lg border border-slate-300 px-3 py-2"
-              value={customerId}
-              onChange={(e) => setCustomerId(e.target.value)}
-            />
-          </label>
-        </header>
-
-        <div className="h-[52vh] overflow-y-auto rounded-2xl bg-slate-50 p-4" aria-live="polite" aria-label="Messages list">
-          {messages.length === 0 && <p className="text-sm text-slate-500">Start by asking a support question.</p>}
-
-          {messages.map((item) => (
-            <article
-              key={item.id}
-              className={`mb-3 max-w-[85%] rounded-2xl p-3 text-sm animate-rise ${
-                item.role === 'user'
-                  ? 'ml-auto bg-brand-ocean text-white'
-                  : 'border border-slate-200 bg-white text-slate-800'
-              }`}
-            >
-              <p>{item.content}</p>
-              <footer className="mt-2 flex items-center justify-between text-xs opacity-80">
-                <span>{item.role === 'user' ? 'You' : 'Agent'}</span>
-                <span>{formatTime(item.timestamp)}</span>
-              </footer>
-              {item.role === 'agent' && typeof item.confidence === 'number' && (
-                <p className="mt-1 text-xs">Confidence: {(item.confidence * 100).toFixed(0)}%</p>
-              )}
-            </article>
-          ))}
-
-          {loading && (
-            <div className="mb-3 max-w-[85%] rounded-2xl border border-dashed border-slate-300 bg-white p-3 text-sm text-slate-500">
-              Agent is thinking...
-            </div>
-          )}
-          <div ref={messageEndRef} />
+    <div className="glass" style={{
+      borderRadius: 16,
+      display: 'flex',
+      flexDirection: 'column',
+      height: 'calc(100vh - 220px)',
+      overflow: 'hidden'
+    }}>
+      {/* Chat Header */}
+      <div style={{
+        padding: '1.25rem 1.5rem',
+        borderBottom: '1px solid var(--border)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between'
+      }}>
+        <div>
+          <h2 style={{
+            fontFamily: 'Manrope, sans-serif',
+            fontWeight: 700,
+            fontSize: '1.1rem',
+            letterSpacing: '-0.02em'
+          }}>Customer Conversation</h2>
+          <p style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: 2 }}>
+            Structured responses informed by historical cases
+          </p>
         </div>
 
-        <form className="mt-4 flex gap-2" onSubmit={sendMessage}>
+        {/* Customer ID */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: '0.7rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>ID</span>
           <input
-            aria-label="Support message"
-            className="flex-1 rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none ring-brand-ocean transition focus:ring-2"
-            placeholder="Describe your issue..."
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            value={customerId}
+            onChange={e => setCustomerId(e.target.value)}
+            style={{
+              padding: '4px 10px',
+              fontSize: '0.75rem',
+              width: 130
+            }}
           />
-          <button
-            type="submit"
-            disabled={loading}
-            className="rounded-xl bg-brand-mint px-5 py-3 text-sm font-semibold text-white transition hover:brightness-95 disabled:opacity-50"
-          >
-            Send
-          </button>
-        </form>
-
-        {lastMetadata && (
-          <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-            <p>Similar past cases used: {lastMetadata.similar_past_cases}</p>
-            <p>Average effectiveness of matched cases: {(lastMetadata.avg_effectiveness * 100).toFixed(0)}%</p>
-          </div>
-        )}
+        </div>
       </div>
 
-      <MemoryContext memory={lastMetadata?.hindsight_memory_used} />
-    </section>
+      {/* Messages */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {messages.length === 0 && (
+          <div style={{
+            flex: 1, display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            opacity: 0.75, gap: 12
+          }}>
+            <div style={{
+              width: 44,
+              height: 44,
+              borderRadius: 999,
+              border: '1px solid var(--border)',
+              background: 'var(--surface2)',
+              display: 'grid',
+              placeItems: 'center',
+              color: 'var(--accent)',
+              fontWeight: 700
+            }}>S</div>
+            <p style={{ fontSize: '0.85rem', color: 'var(--muted)', textAlign: 'center' }}>
+              Start a support conversation to see suggested responses and context.
+            </p>
+          </div>
+        )}
+
+        {messages.map((m, i) => (
+          <div key={i} className="fade-up" style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: m.role === 'user' ? 'flex-end' : 'flex-start'
+          }}>
+            {m.role === 'user' ? (
+              <div style={{
+                background: 'var(--accent)',
+                color: '#fff',
+                padding: '10px 16px',
+                borderRadius: '16px 16px 4px 16px',
+                maxWidth: '75%',
+                fontSize: '0.9rem',
+                lineHeight: 1.5,
+                boxShadow: '0 6px 16px rgba(31,111,235,0.2)'
+              }}>
+                {m.content}
+              </div>
+            ) : (
+              <div style={{ maxWidth: '80%' }}>
+                <div style={{
+                  background: 'var(--surface2)',
+                  border: '1px solid var(--border)',
+                  padding: '12px 16px',
+                  borderRadius: '4px 16px 16px 16px',
+                  fontSize: '0.875rem',
+                  lineHeight: 1.6,
+                  color: 'var(--text)'
+                }}>
+                  {m.content}
+                </div>
+                {/* Metadata */}
+                {(m.confidence || m.cases !== undefined) && (
+                  <div style={{
+                    display: 'flex', gap: 12, marginTop: 6,
+                    paddingLeft: 4, flexWrap: 'wrap'
+                  }}>
+                    {m.confidence && (
+                      <span style={{
+                        fontSize: '0.7rem',
+                        color: confColor(m.confidence),
+                        display: 'flex', alignItems: 'center', gap: 4
+                      }}>
+                        <span style={{
+                          width: 6, height: 6, borderRadius: '50%',
+                          background: confColor(m.confidence),
+                          display: 'inline-block'
+                        }}/>
+                        {Math.round(m.confidence * 100)}% confidence
+                      </span>
+                    )}
+                    {m.cases !== undefined && (
+                      <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>
+                        {m.cases} similar cases
+                      </span>
+                    )}
+                    {m.provider && (
+                      <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>
+                        via {m.provider}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
+
+        {loading && (
+          <div className="fade-up" style={{ display: 'flex', alignItems: 'flex-start' }}>
+            <div style={{
+              background: 'var(--surface2)',
+              border: '1px solid var(--border)',
+              padding: '14px 18px',
+              borderRadius: '4px 16px 16px 16px',
+              display: 'flex', gap: 6, alignItems: 'center'
+            }}>
+              <div className="thinking-dot" />
+              <div className="thinking-dot" />
+              <div className="thinking-dot" />
+            </div>
+          </div>
+        )}
+
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Input */}
+      <div style={{
+        padding: '1rem 1.5rem',
+        borderTop: '1px solid var(--border)',
+        display: 'flex', gap: 10
+      }}>
+        <textarea
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={handleKey}
+          placeholder="Describe your issue… (Enter to send)"
+          rows={1}
+          style={{
+            flex: 1, padding: '10px 14px',
+            resize: 'none', fontSize: '0.875rem',
+            lineHeight: 1.5
+          }}
+        />
+        <button
+          onClick={send}
+          disabled={loading || !input.trim()}
+          style={{
+            padding: '10px 20px',
+            borderRadius: 10,
+            background: loading || !input.trim()
+              ? 'var(--border)'
+              : 'var(--accent)',
+            color: loading || !input.trim() ? 'var(--muted)' : '#fff',
+            border: 'none',
+            cursor: loading || !input.trim() ? 'not-allowed' : 'pointer',
+            fontFamily: 'Manrope, sans-serif',
+            fontWeight: 600,
+            fontSize: '0.875rem',
+            transition: 'all 0.2s ease',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          {loading ? 'Sending...' : 'Send'}
+        </button>
+      </div>
+    </div>
   );
 }
-
-export default ChatInterface;

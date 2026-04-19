@@ -12,17 +12,9 @@ function sleep(ms) {
 }
 
 function fallbackResponse(userMessage) {
-  return `I am currently experiencing high load. Here is a safe immediate step: please confirm your account email and describe your issue in one sentence. Original request: ${userMessage.slice(0, 200)}`;
+  return `I am currently experiencing high load. Here is a safe immediate step: please confirm your account email and describe your issue in one sentence. Original request: ${String(userMessage || '').slice(0, 200)}`;
 }
 
-/**
- * Generates a support response using Groq LLM.
- * @param {string} systemPrompt
- * @param {string} userMessage
- * @param {number} temperature
- * @param {{stream?: boolean, model?: string}} options
- * @returns {Promise<{content: string, raw: object, stream?: AsyncIterable}>}
- */
 async function generateResponse(systemPrompt, userMessage, temperature = 0.3, options = {}) {
   if (!systemPrompt || !userMessage) {
     throw new Error('systemPrompt and userMessage are required');
