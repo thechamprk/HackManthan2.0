@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { analytics } from '../utils/api';
 
 export const useAnalytics = () => {
@@ -7,7 +7,7 @@ export const useAnalytics = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchDashboard = async () => {
+  const fetchDashboard = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await analytics.getDashboard();
@@ -19,7 +19,7 @@ export const useAnalytics = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   const fetchMetrics = async () => {
     try {
@@ -37,7 +37,7 @@ export const useAnalytics = () => {
 
   useEffect(() => {
     fetchDashboard();
-  }, []);
+  }, [fetchDashboard]);
 
   return {
     dashboard,
