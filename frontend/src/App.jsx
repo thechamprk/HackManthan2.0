@@ -1,26 +1,40 @@
-import { useState } from 'react';
-import Header from './components/Header';
-import Footer from './components/Footer';
-import ErrorBoundary from './components/ErrorBoundary';
-import ChatInterface from './components/ChatInterface';
-import Analytics from './components/Analytics';
-import './App.css';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import Landing from './pages/Landing';
+import Home from './pages/Home';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('home');
+  const [route, setRoute] = useState({
+    pathname: window.location.pathname,
+    search: window.location.search
+  });
 
-  return (
-    <ErrorBoundary>
-      <div className="app">
-        <Header />
-        <main className="main-content">
-          {currentPage === 'home' && <ChatInterface />}
-          {currentPage === 'dashboard' && <Analytics />}
-        </main>
-        <Footer />
-      </div>
-    </ErrorBoundary>
-  );
+  useEffect(() => {
+    const syncRoute = () =>
+      setRoute({
+        pathname: window.location.pathname,
+        search: window.location.search
+      });
+
+    window.addEventListener('popstate', syncRoute);
+    window.addEventListener('routechange', syncRoute);
+    return () => {
+      window.removeEventListener('popstate', syncRoute);
+      window.removeEventListener('routechange', syncRoute);
+    };
+  }, []);
+
+  const navigate = useCallback((path) => {
+    if (`${window.location.pathname}${window.location.search}` === path) return;
+    window.history.pushState({}, '', path);
+    window.dispatchEvent(new Event('routechange'));
+  }, []);
+
+  const screen = useMemo(() => {
+    if (route.pathname === '/app') return <Home search={route.search} onNavigate={navigate} />;
+    return <Landing onNavigate={navigate} />;
+  }, [route.pathname, route.search, navigate]);
+
+  return <div>{screen}</div>;
 }
 
 export default App;

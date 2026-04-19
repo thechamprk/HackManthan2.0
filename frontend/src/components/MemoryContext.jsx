@@ -1,54 +1,38 @@
-import React, { useState } from 'react';
-import styles from '../styles/MemoryContext.module.css';
-
-export default function MemoryContext({ similarCases = [], patterns = [] }) {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  if ((!similarCases || similarCases.length === 0) && (!patterns || patterns.length === 0)) {
-    return null;
-  }
+function MemoryContext({ memory = { retrieved_cases: [], patterns_applied: [] } }) {
+  const cases = memory?.retrieved_cases || [];
+  const patterns = memory?.patterns_applied || [];
 
   return (
-    <div className={styles['memory-context']}>
-      <button
-        className={styles['memory-toggle']}
-        onClick={() => setIsExpanded(!isExpanded)}
-      >
-        💾 Memory Context {isExpanded ? '▼' : '▶'}
-      </button>
+    <aside className="memory-card">
+      <h3>Memory Context</h3>
+      <p className="muted">{cases.length || patterns.length ? 'Memory Active' : 'No Memory Yet'}</p>
 
-      {isExpanded && (
-        <div className={styles['memory-content']}>
-          {patterns && patterns.length > 0 && (
-            <div className={styles['patterns-section']}>
-              <h4>Applied Patterns</h4>
-              <div className={styles['patterns-list']}>
-                {patterns.map((pattern, idx) => (
-                  <span key={idx} className={styles['pattern-tag']}>{pattern}</span>
-                ))}
-              </div>
-            </div>
-          )}
+      <div className="pill-wrap">
+        {patterns.length ? (
+          patterns.map((p) => (
+            <span key={p} className="pill">
+              {p}
+            </span>
+          ))
+        ) : (
+          <span className="muted">No patterns yet</span>
+        )}
+      </div>
 
-          {similarCases && similarCases.length > 0 && (
-            <div className={styles['cases-section']}>
-              <h4>Similar Past Cases</h4>
-              <div className={styles['cases-list']}>
-                {similarCases.map((caseItem, idx) => (
-                  <div key={idx} className={styles['case-item']}>
-                    <p className={styles['case-text']}>{caseItem.issue}</p>
-                    <div className={styles['case-meta']}>
-                      <span className={styles.effectiveness}>
-                        ⭐ {(caseItem.effectiveness * 100).toFixed(0)}% effective
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+      <div className="case-list">
+        {cases.length ? (
+          cases.map((c, i) => (
+            <div key={`${c.interaction_id || i}_${i}`} className="case-card">
+              <strong>Case {i + 1}</strong>
+              <p>{c.agent_response || 'No summary available'}</p>
             </div>
-          )}
-        </div>
-      )}
-    </div>
+          ))
+        ) : (
+          <p className="muted">No similar cases retrieved yet.</p>
+        )}
+      </div>
+    </aside>
   );
 }
+
+export default MemoryContext;
