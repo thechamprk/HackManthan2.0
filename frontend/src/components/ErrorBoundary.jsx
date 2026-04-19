@@ -1,29 +1,53 @@
-import { Component } from 'react';
+import React from 'react';
 
-class ErrorBoundary extends Component {
+export default class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, message: '' };
+    this.state = { hasError: false, error: null };
   }
 
   static getDerivedStateFromError(error) {
-    return { hasError: true, message: error?.message || 'Unknown UI error' };
+    return { hasError: true, error };
   }
 
-  componentDidCatch() {}
+  componentDidCatch(error, info) {
+    console.error('Error caught by boundary:', error, info);
+  }
 
   render() {
     if (this.state.hasError) {
       return (
-        <main className="mx-auto mt-12 max-w-xl rounded-xl border border-rose-200 bg-rose-50 p-6 text-rose-700">
-          <h1 className="text-xl font-bold">Something went wrong</h1>
-          <p className="mt-2 text-sm">{this.state.message}</p>
-        </main>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          backgroundColor: '#f8d7da',
+          flexDirection: 'column',
+          gap: '1rem'
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <h1 style={{ color: '#721c24', marginBottom: '0.5rem' }}>⚠️ Oops! Something went wrong</h1>
+            <p style={{ color: '#721c24', marginBottom: '1rem' }}>{this.state.error?.message}</p>
+            <button
+              onClick={() => window.location.reload()}
+              style={{
+                padding: '0.75rem 1.5rem',
+                backgroundColor: '#721c24',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '1rem'
+              }}
+            >
+              Reload Page
+            </button>
+          </div>
+        </div>
       );
     }
 
     return this.props.children;
   }
 }
-
-export default ErrorBoundary;
