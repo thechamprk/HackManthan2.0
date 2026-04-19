@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '../styles/MemoryContext.module.css';
+import styles from '../styles/MemoryContext.module.css';
 
 export default function MemoryContext({ similarCases = [], patterns = [] }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -9,36 +9,36 @@ export default function MemoryContext({ similarCases = [], patterns = [] }) {
   }
 
   return (
-    <div className="memory-context">
+    <div className={styles['memory-context']}>
       <button
-        className="memory-toggle"
+        className={styles['memory-toggle']}
         onClick={() => setIsExpanded(!isExpanded)}
       >
         💾 Memory Context {isExpanded ? '▼' : '▶'}
       </button>
 
       {isExpanded && (
-        <div className="memory-content">
+        <div className={styles['memory-content']}>
           {patterns && patterns.length > 0 && (
-            <div className="patterns-section">
+            <div className={styles['patterns-section']}>
               <h4>Applied Patterns</h4>
-              <div className="patterns-list">
+              <div className={styles['patterns-list']}>
                 {patterns.map((pattern, idx) => (
-                  <span key={idx} className="pattern-tag">{pattern}</span>
+                  <span key={idx} className={styles['pattern-tag']}>{pattern}</span>
                 ))}
               </div>
             </div>
           )}
 
           {similarCases && similarCases.length > 0 && (
-            <div className="cases-section">
+            <div className={styles['cases-section']}>
               <h4>Similar Past Cases</h4>
-              <div className="cases-list">
+              <div className={styles['cases-list']}>
                 {similarCases.map((caseItem, idx) => (
-                  <div key={idx} className="case-item">
-                    <p className="case-text">{caseItem.issue}</p>
-                    <div className="case-meta">
-                      <span className="effectiveness">
+                  <div key={idx} className={styles['case-item']}>
+                    <p className={styles['case-text']}>{caseItem.issue}</p>
+                    <div className={styles['case-meta']}>
+                      <span className={styles.effectiveness}>
                         ⭐ {(caseItem.effectiveness * 100).toFixed(0)}% effective
                       </span>
                     </div>
