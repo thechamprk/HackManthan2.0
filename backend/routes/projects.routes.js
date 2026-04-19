@@ -4,6 +4,8 @@ const { projects, createId, activity } = require('../data/store');
 const { successResponse } = require('../utils/response');
 
 const router = express.Router();
+const DEFAULT_PROJECT_DURATION_DAYS = 14;
+const DAY_MS = 1000 * 60 * 60 * 24;
 
 const projectCreateSchema = z.object({
   name: z.string().trim().min(1),
@@ -45,7 +47,7 @@ router.post('/', (req, res) => {
     const project = {
       id: createId('proj'),
       ...parsed,
-      dueDate: parsed.dueDate || new Date(Date.now() + 1000 * 60 * 60 * 24 * 14).toISOString(),
+      dueDate: parsed.dueDate || new Date(Date.now() + DAY_MS * DEFAULT_PROJECT_DURATION_DAYS).toISOString(),
       color:
         parsed.color ||
         {

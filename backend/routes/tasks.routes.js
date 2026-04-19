@@ -34,7 +34,10 @@ router.get('/', (req, res) => {
   const filtered = tasks.filter((item) => {
     if (projectFilter && item.projectId !== projectFilter) return false;
     if (dateFilter) {
-      const normalized = new Date(item.dueDate).toISOString().slice(0, 10);
+      if (!item.dueDate) return false;
+      const date = new Date(item.dueDate);
+      if (Number.isNaN(date.getTime())) return false;
+      const normalized = date.toISOString().slice(0, 10);
       if (normalized !== dateFilter) return false;
     }
     return true;

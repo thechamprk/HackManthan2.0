@@ -7,6 +7,7 @@ const STATUS_COLORS = {
   planning: 'var(--accent2)',
   blocked: 'var(--red)'
 };
+const MAX_TODAY_TASKS = 6;
 
 function Home() {
   const [projects, setProjects] = useState([]);
@@ -35,7 +36,9 @@ function Home() {
   }, [projects, tasks]);
 
   const today = new Date().toISOString().slice(0, 10);
-  const todaysTasks = tasks.filter((item) => String(item.dueDate || '').slice(0, 10) === today).slice(0, 6);
+  const todaysTasks = tasks
+    .filter((item) => String(item.dueDate || '').slice(0, 10) === today)
+    .slice(0, MAX_TODAY_TASKS);
 
   async function toggleTask(taskId, currentDone) {
     const updated = await tasksApi.update(taskId, { done: !currentDone });

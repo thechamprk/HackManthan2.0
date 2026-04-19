@@ -59,7 +59,7 @@ function Todo() {
   }
 
   async function saveToTasks() {
-    const pending = items.filter((item) => item.text.trim());
+    const pending = items.filter((item) => item.text.trim().length > 0);
     await Promise.all(
       pending.map((item) =>
         tasksApi.create({

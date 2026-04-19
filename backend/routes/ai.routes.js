@@ -3,9 +3,9 @@ const { z } = require('zod');
 const { generateResponse } = require('../services/groq.service');
 const { grantsDataset } = require('../data/store');
 const { successResponse } = require('../utils/response');
+const { GROQ_MODEL } = require('../utils/constants');
 
 const router = express.Router();
-const GROQ_MODEL = 'llama-3.3-70b-versatile';
 
 const breakdownSchema = z.object({
   goal: z.string().trim().min(1)

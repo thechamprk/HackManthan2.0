@@ -12,7 +12,8 @@ function Search() {
   const [recent, setRecent] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('insights_recent_searches') || '[]');
-    } catch (_error) {
+    } catch (error) {
+      console.warn('Failed to parse recent searches', error);
       return [];
     }
   });
