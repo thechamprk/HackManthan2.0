@@ -10,83 +10,182 @@ function Landing({ onNavigate }) {
     if (!customerId.trim()) return;
 
     const params = new URLSearchParams({ customerId: customerId.trim() });
-    if (name.trim()) {
-      params.set('name', name.trim());
-    }
+    if (name.trim()) params.set('name', name.trim());
 
     onNavigate(`/app?${params.toString()}`);
   }
 
+  function smoothScrollTo(selector) {
+    const target = document.querySelector(selector);
+    if (target) target.scrollIntoView({ behavior: 'smooth' });
+  }
+
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col items-center justify-center px-4 py-12 md:px-8">
-      <section className="glass-card w-full animate-fade-up rounded-3xl p-6 md:p-10">
-        <p className="text-xs uppercase tracking-[0.28em] text-slate-300">HackManthan Project</p>
-        <h1 className="mt-4 text-4xl font-extrabold tracking-tight md:text-6xl">HindsightHub</h1>
-        <p className="mt-3 text-base text-slate-300 md:text-lg">AI Support with Persistent Memory</p>
-
-        <div className="mt-8 grid gap-4 md:grid-cols-2">
-          {['Persistent Memory', 'Fast AI Responses', 'Pattern Learning', 'Analytics Dashboard'].map((feature) => (
-            <article key={feature} className="glass-card rounded-2xl p-4">
-              <h2 className="font-heading text-lg font-bold text-white">{feature}</h2>
-              <p className="mt-2 text-sm text-slate-300">Built for high-quality support with consistent context and learning.</p>
-            </article>
-          ))}
-        </div>
-
-        <button
-          type="button"
-          className="mt-8 rounded-xl bg-gradient-to-r from-[var(--purple)] to-[var(--teal)] px-6 py-3 text-sm font-semibold text-white transition hover:brightness-110"
-          onClick={() => setShowModal(true)}
+    <div className="nova-page">
+      <nav className="nova-nav">
+        <a
+          className="nova-logo"
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
         >
-          Get Started
-        </button>
+          hindsight<span>.</span>
+        </a>
+
+        <div className="nova-nav-links">
+          <a
+            href="#about"
+            onClick={(e) => {
+              e.preventDefault();
+              smoothScrollTo('#about');
+            }}
+          >
+            About
+          </a>
+          <a
+            href="#features"
+            onClick={(e) => {
+              e.preventDefault();
+              smoothScrollTo('#features');
+            }}
+          >
+            Features
+          </a>
+          <button type="button" className="btn-login" onClick={() => setShowModal(true)}>
+            Login
+          </button>
+        </div>
+      </nav>
+
+      <section className="hero">
+        <div className="badge">Now in public beta</div>
+        <h1>
+          AI support, <em>with memory</em>
+        </h1>
+        <p className="hero-sub">
+          HindsightHub helps teams resolve customer issues faster using persistent memory, contextual intelligence,
+          and elegant workflows.
+        </p>
+        <div className="cta-row">
+          <button className="btn-primary" type="button" onClick={() => setShowModal(true)}>
+            Get started free
+          </button>
+          <button
+            className="btn-secondary"
+            type="button"
+            onClick={() => smoothScrollTo('#features')}
+          >
+            See features →
+          </button>
+        </div>
       </section>
 
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-          <form className="glass-card w-full max-w-md animate-fade-up rounded-2xl p-6" onSubmit={handleSubmit}>
-            <h2 className="font-heading text-2xl font-bold">Welcome to HindsightHub</h2>
-            <p className="mt-1 text-sm text-slate-300">Enter your profile to continue</p>
+      <div className="divider" />
 
-            <label className="mt-5 block text-sm text-slate-300">
+      <section className="features-section" id="features">
+        <div className="section-label">Features</div>
+        <div className="section-title">Everything you need</div>
+
+        <div className="features-grid">
+          <div className="feature-card">
+            <div className="feature-icon">🧠</div>
+            <h3>Persistent Memory</h3>
+            <p>Store and recall past support interactions to deliver context-aware responses every time.</p>
+          </div>
+
+          <div className="feature-card">
+            <div className="feature-icon">⚡</div>
+            <h3>Fast AI Responses</h3>
+            <p>Powered by modern LLMs for fast, reliable and human-like support conversations.</p>
+          </div>
+
+          <div className="feature-card">
+            <div className="feature-icon">📈</div>
+            <h3>Pattern Learning</h3>
+            <p>Detect repeated issue patterns and improve guidance quality continuously.</p>
+          </div>
+
+          <div className="feature-card">
+            <div className="feature-icon">📊</div>
+            <h3>Analytics Dashboard</h3>
+            <p>Visualize interaction trends, confidence and outcomes with real-time metrics.</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="about-section" id="about">
+        <div className="about-text">
+          <div className="section-label">About</div>
+          <h2>Built for modern support teams</h2>
+          <p>
+            HindsightHub combines memory + AI to reduce repetitive handling, improve resolution quality, and help
+            agents respond with confidence.
+          </p>
+        </div>
+
+        <div className="about-stats">
+          <div className="stat">
+            <div className="stat-num">24/7</div>
+            <div className="stat-label">AI Assistance</div>
+          </div>
+          <div className="stat">
+            <div className="stat-num">Fast</div>
+            <div className="stat-label">Response Time</div>
+          </div>
+          <div className="stat">
+            <div className="stat-num">Smart</div>
+            <div className="stat-label">Memory Recall</div>
+          </div>
+        </div>
+      </section>
+
+      <footer>© 2026 HindsightHub · All rights reserved.</footer>
+
+      {showModal && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <form
+            className="modal-card"
+            onSubmit={handleSubmit}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2>Welcome to HindsightHub</h2>
+            <p>Enter your details to continue</p>
+
+            <label>
               Name
               <input
-                className="mt-2 w-full rounded-xl"
+                type="text"
                 value={name}
-                onChange={(event) => setName(event.target.value)}
+                onChange={(e) => setName(e.target.value)}
                 placeholder="Your name"
               />
             </label>
-            <label className="mt-4 block text-sm text-slate-300">
+
+            <label>
               Customer ID
               <input
-                className="mt-2 w-full rounded-xl"
+                type="text"
                 value={customerId}
-                onChange={(event) => setCustomerId(event.target.value)}
+                onChange={(e) => setCustomerId(e.target.value)}
                 placeholder="cust_001"
                 required
               />
             </label>
 
-            <div className="mt-6 flex justify-end gap-2">
-              <button
-                type="button"
-                className="rounded-xl border border-white/20 bg-white/5 px-4 py-2 text-sm text-slate-200"
-                onClick={() => setShowModal(false)}
-              >
+            <div className="modal-actions">
+              <button type="button" className="btn-secondary" onClick={() => setShowModal(false)}>
                 Cancel
               </button>
-              <button
-                type="submit"
-                className="rounded-xl bg-gradient-to-r from-[var(--purple)] to-[var(--teal)] px-4 py-2 text-sm font-semibold"
-              >
+              <button type="submit" className="btn-primary">
                 Continue
               </button>
             </div>
           </form>
         </div>
       )}
-    </main>
+    </div>
   );
 }
 
