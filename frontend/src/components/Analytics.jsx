@@ -12,8 +12,8 @@ function Analytics() {
         const res = await fetch(`${API_URL}/api/analytics/dashboard`);
         const payload = await res.json();
         if (mounted && payload?.success) setData(payload.data);
-      } catch {
-        console.error('Failed to load analytics dashboard');
+      } catch (error) {
+        console.error('Failed to load analytics dashboard:', error);
       }
     }
 
