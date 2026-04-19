@@ -13,7 +13,7 @@ function Analytics() {
         const payload = await res.json();
         if (mounted && payload?.success) setData(payload.data);
       } catch {
-        // keep simple
+        console.error('Failed to load analytics dashboard');
       }
     }
 
