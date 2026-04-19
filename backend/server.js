@@ -9,6 +9,11 @@ const morgan = require('morgan');
 
 const supportRoutes = require('./routes/support.routes');
 const analyticsRoutes = require('./routes/analytics.routes');
+const projectsRoutes = require('./routes/projects.routes');
+const tasksRoutes = require('./routes/tasks.routes');
+const onboardingRoutes = require('./routes/onboarding.routes');
+const searchRoutes = require('./routes/search.routes');
+const aiRoutes = require('./routes/ai.routes');
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -43,6 +48,11 @@ app.get('/health', (_req, res) => {
 
 app.use('/api/support', supportRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/projects', projectsRoutes);
+app.use('/api/tasks', tasksRoutes);
+app.use('/api/onboarding', onboardingRoutes);
+app.use('/api/search', searchRoutes);
+app.use('/api/ai', aiRoutes);
 
 app.use((req, res) => {
   res.status(404).json({
