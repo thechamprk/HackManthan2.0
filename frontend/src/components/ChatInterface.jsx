@@ -1,7 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import MemoryContext from './MemoryContext';
-
-const API_URL = import.meta.env.VITE_API_URL || import.meta.env.REACT_APP_API_URL || 'http://localhost:3000';
+import { API_URL } from '../utils/constants';
 
 function formatTime(isoDate) {
   return new Date(isoDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -52,7 +51,9 @@ function ChatInterface({ customerId }) {
       });
 
       const payload = await response.json();
-      if (!response.ok || !payload.success) throw new Error(payload?.error?.message || 'Failed');
+      if (!response.ok || !payload.success) {
+        throw new Error(payload?.error?.message || 'Failed to send support message');
+      }
 
       const data = payload.data;
       setMessages((prev) => [

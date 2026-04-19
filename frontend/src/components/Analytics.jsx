@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-
-const API_URL = import.meta.env.VITE_API_URL || import.meta.env.REACT_APP_API_URL || 'http://localhost:3000';
+import { API_URL } from '../utils/constants';
 
 function Analytics() {
   const [data, setData] = useState(null);
