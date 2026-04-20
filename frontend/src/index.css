@@ -156,10 +156,25 @@ footer { padding:1.5rem 2.5rem; text-align:center; border-top:1px solid #e8e8e8;
 .modal-actions { margin-top:1rem; display:flex; justify-content:flex-end; gap:.5rem; }
 
 /* App pages keep simple elegant */
-.app-shell { background:#f8f9fb; min-height:100vh; }
+.app-shell {
+  --shell-glow-width: 1200px;
+  --shell-glow-height: 600px;
+  --shell-glow-pos-x: 90%;
+  --shell-glow-pos-y: -20%;
+  --shell-glow-color: rgba(43, 79, 255, 0.08);
+  --shell-glow-fade: 60%;
+  background: radial-gradient(
+      var(--shell-glow-width) var(--shell-glow-height) at var(--shell-glow-pos-x) var(--shell-glow-pos-y),
+      var(--shell-glow-color),
+      transparent var(--shell-glow-fade)
+    ),
+    var(--bg);
+  min-height: 100vh;
+}
 .app-header {
   position: sticky; top:0; z-index:40; background:#fff; border-bottom:1px solid #e8e8e8;
   display:flex; justify-content:space-between; align-items:center; padding:1rem 1.5rem;
+  backdrop-filter: blur(10px);
 }
 .app-header h1 { font-family:'Playfair Display', serif; font-size:26px; }
 .app-header p { font-size:12px; color:#777; }
@@ -168,11 +183,139 @@ footer { padding:1.5rem 2.5rem; text-align:center; border-top:1px solid #e8e8e8;
 .live-dot { width:8px; height:8px; border-radius:999px; background:#1D9E75; }
 .app-main { max-width:1200px; margin:1rem auto; padding:0 1rem 2rem; display:flex; flex-direction:column; gap:1rem; }
 
-.chat-grid { display:grid; grid-template-columns:1.4fr 1fr; gap:1rem; }
+.workspace-hero {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: linear-gradient(140deg, var(--surface), var(--bg2));
+  padding: 1.1rem 1.15rem;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 1rem;
+}
+
+.workspace-kicker {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.workspace-hero-main h2 {
+  font-size: 1.35rem;
+  margin-bottom: 0.4rem;
+}
+
+.workspace-hero-main p {
+  color: var(--text2);
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.workspace-hero-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.workspace-hero-metrics article {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 0.7rem;
+}
+
+.workspace-hero-metrics strong {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.workspace-hero-metrics span {
+  font-size: 12px;
+  color: var(--text2);
+}
+
+.chat-grid { display:grid; grid-template-columns: 0.9fr 1.65fr 1fr; gap:1rem; align-items: start; }
 .chat-card, .memory-card, .analytics-card {
   background:#fff; border:1px solid #e8e8e8; border-radius:12px; padding:1rem;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.07);
+}
+.history-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.9rem;
+  min-height: 420px;
+}
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.8rem;
+}
+.history-header h3 {
+  font-family: 'Playfair Display', serif;
+}
+.history-new-btn {
+  padding: 0.45rem 0.7rem;
+}
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  max-height: 460px;
+  overflow-y: auto;
+}
+.history-item {
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.6rem 0.65rem;
+  background: var(--bg2);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.history-item strong {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text);
+  margin-bottom: 0.2rem;
+}
+.history-item small {
+  color: var(--text2);
+  font-size: 11px;
+}
+.history-item:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+}
+.history-item.active {
+  border-color: var(--accent);
+  background: var(--accentbg);
+}
+.chat-main-card {
+  min-height: 500px;
 }
 .chat-title { display:flex; justify-content:space-between; align-items:center; margin-bottom:.75rem; }
+.chat-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+.chat-topic-pill {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--accentmid);
+  background: var(--accentbg);
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  font-size: 11px;
+  font-weight: 600;
+}
 .customer-pill { font-size:12px; color:#666; border:1px solid #e8e8e8; border-radius:999px; padding:.2rem .6rem; }
 .chat-body { min-height:300px; max-height:420px; overflow:auto; background:#fcfcfc; border:1px solid #eee; border-radius:10px; padding:.75rem; }
 .bubble { max-width:85%; border-radius:10px; padding:.65rem .75rem; margin-bottom:.6rem; }
@@ -807,7 +950,25 @@ footer { padding:1.5rem 2.5rem; text-align:center; border-top:1px solid #e8e8e8;
   }
 }
 
+@media (max-width: 1100px) {
+  .workspace-hero {
+    grid-template-columns: 1fr;
+  }
+  .workspace-hero-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .chat-grid {
+    grid-template-columns: 1fr 1.2fr;
+  }
+  .memory-card {
+    grid-column: 1 / -1;
+  }
+}
+
 @media (max-width: 900px) {
+  .workspace-hero-metrics {
+    grid-template-columns: 1fr;
+  }
   .chat-grid { grid-template-columns: 1fr; }
   .stats-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
@@ -885,11 +1046,15 @@ footer { padding:1.5rem 2.5rem; text-align:center; border-top:1px solid #e8e8e8;
 .btn-secondary,
 .modal-card,
 .feature-card,
+.workspace-hero,
+.workspace-hero-metrics article,
 .chat-card,
+.history-card,
 .memory-card,
 .analytics-card,
 .about-page-card,
 .customer-pill,
+.history-item,
 .chat-input-row input,
 .insights-form input,
 .insights-list-item,
@@ -907,13 +1072,15 @@ footer { padding:1.5rem 2.5rem; text-align:center; border-top:1px solid #e8e8e8;
 .modal-card,
 .feature-card,
 .chat-card,
+.history-card,
 .memory-card,
 .analytics-card,
 .about-page-card,
 .about-member-card,
 .team-card,
 .chat-input-row input,
-.nova-menu-toggle {
+.nova-menu-toggle,
+.workspace-hero-metrics article {
   background: var(--surface);
 }
 
@@ -963,6 +1130,7 @@ footer {
 .chat-input-row input,
 .insights-form input,
 .app-header-right,
+.history-item small,
 .about-page-card p,
 .about-member-card p,
 .about-member-links a,
