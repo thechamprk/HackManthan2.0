@@ -29,7 +29,31 @@ body {
 .nova-nav-links a, .btn-login {
   font-size: 14px; color: #555; text-decoration: none; background: none; border: none; cursor: pointer;
 }
+.nova-nav-links a:focus-visible, .btn-login:focus-visible, .nova-menu-toggle:focus-visible {
+  outline: 2px solid #1D9E75;
+  outline-offset: 2px;
+}
 .btn-login { border: 1px solid #d0d0d0; padding: 8px 20px; border-radius: 6px; }
+.nova-menu-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 42px;
+  height: 42px;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  padding: 0 10px;
+}
+.nova-menu-toggle span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: #444;
+  border-radius: 999px;
+}
 
 .hero { padding: 6rem 2.5rem 4rem; max-width: 780px; margin: 0 auto; text-align: center; }
 .badge {
@@ -71,10 +95,34 @@ body {
 .about-text { flex:1; min-width:220px; }
 .about-text h2 { font-family:'Playfair Display', serif; font-size:28px; margin-bottom:1rem; }
 .about-text p { color:#666; line-height:1.7; font-size:14px; }
+.about-content { flex:1; min-width:240px; display:flex; flex-direction:column; gap:1.5rem; }
 .about-stats { display:flex; gap:2rem; flex-wrap:wrap; }
 .stat { text-align:center; }
 .stat-num { font-family:'Playfair Display', serif; font-size:32px; color:#1D9E75; }
 .stat-label { color:#888; font-size:12px; }
+.about-team {
+  display:grid;
+  grid-template-columns: repeat(3, minmax(140px, 1fr));
+  gap: 12px;
+}
+.team-card {
+  border: 1px solid #e1e1e1;
+  border-radius: 10px;
+  background: #fff;
+  padding: 1rem;
+}
+.team-card h3 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #1D9E75;
+  margin-bottom: .4rem;
+}
+.team-card p {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  color: #222;
+}
 
 footer { padding:1.5rem 2.5rem; text-align:center; border-top:1px solid #e8e8e8; color:#999; font-size:12px; }
 
@@ -613,4 +661,32 @@ footer { padding:1.5rem 2.5rem; text-align:center; border-top:1px solid #e8e8e8;
   .hero, .features-section { padding-left:1.25rem; padding-right:1.25rem; }
   .about-section { margin:0 1.25rem 3rem; padding:2rem; }
   .divider { margin:0 1.25rem; }
+}
+
+@media (max-width: 900px) {
+  .nova-menu-toggle { display: inline-flex; }
+  .nova-nav-links {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 1.25rem;
+    min-width: 220px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: .5rem;
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 10px;
+    padding: .75rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .08);
+  }
+  .nova-nav-links.open { display: flex; }
+  .nova-nav-links a, .nova-nav-links .btn-login {
+    width: 100%;
+    text-align: left;
+    padding: .55rem .45rem;
+    border-radius: 6px;
+  }
+  .nova-nav-links .btn-login { border: 1px solid #d0d0d0; }
+  .about-team { grid-template-columns: 1fr; }
 }
