@@ -3,6 +3,8 @@ import Landing from './pages/Landing';
 import Home from './pages/Home';
 import Insights from './pages/Insights';
 import ProjectsHub from './pages/ProjectsHub';
+import About from './pages/About';
+import Login from './pages/Login';
 
 function App() {
   const [route, setRoute] = useState({
@@ -35,6 +37,8 @@ function App() {
     if (route.pathname === '/app') return <Home search={route.search} onNavigate={navigate} />;
     if (route.pathname === '/insights') return <Insights search={route.search} onNavigate={navigate} />;
     if (route.pathname === '/projects-hub') return <ProjectsHub />;
+    if (route.pathname === '/about') return <About onNavigate={navigate} />;
+    if (route.pathname === '/login') return <Login onNavigate={navigate} />;
     return <Landing onNavigate={navigate} />;
   }, [route.pathname, route.search, navigate]);
 

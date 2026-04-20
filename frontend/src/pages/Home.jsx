@@ -18,7 +18,7 @@ function Home({ search, onNavigate }) {
     <div className="app-shell">
       <header className="app-header">
         <div>
-          <h1>HindsightHub</h1>
+          <h1>Hindsight Expert</h1>
           <p>AI Support with Persistent Memory</p>
         </div>
         <div className="app-header-right">

@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -23,13 +23,14 @@
 }
 
 .modal-content {
-  background: white;
+  background: var(--surface);
   border-radius: 16px;
   max-width: 600px;
   width: 90%;
   max-height: 80vh;
   overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
   animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -49,12 +50,12 @@
   justify-content: space-between;
   align-items: center;
   padding: 2rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border);
 }
 
 .modal-header h2 {
   margin: 0;
-  color: #0f172a;
+  color: var(--text);
   font-size: 1.5rem;
   font-weight: 600;
 }
@@ -64,7 +65,7 @@
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: #64748b;
+  color: var(--text2);
   transition: all 0.3s ease;
   padding: 0;
   width: 32px;
@@ -76,8 +77,8 @@
 }
 
 .close-btn:hover {
-  background: #f1f5f9;
-  color: #0f172a;
+  background: var(--bg2);
+  color: var(--text);
 }
 
 .modal-body {
@@ -89,17 +90,17 @@
 }
 
 .modal-content::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--bg2);
   border-radius: 10px;
 }
 
 .modal-content::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--border2);
   border-radius: 10px;
 }
 
 .modal-content::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--text3);
 }
 
 @media (max-width: 768px) {

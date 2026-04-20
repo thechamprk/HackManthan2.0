@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&display=swap');
 @import './styles/darkMode.css';
 
 @tailwind base;
@@ -8,10 +8,14 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: 'DM Sans', sans-serif;
-  color: var(--color-text-light);
-  background: var(--color-bg-light);
+  font-family: 'Inter', sans-serif;
+  color: var(--text);
+  background: var(--bg);
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1, h2, h3, .section-title, .nova-logo, .app-header h1 {
+  font-family: 'Instrument Serif', serif;
 }
 
 /* Landing style clone */
@@ -29,7 +33,15 @@ body {
 .nova-nav-links a, .btn-login {
   font-size: 14px; color: #555; text-decoration: none; background: none; border: none; cursor: pointer;
 }
-.nova-nav-links a:focus-visible, .btn-login:focus-visible, .nova-menu-toggle:focus-visible {
+.landing-link-button {
+  font-size: 14px;
+  color: #555;
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.nova-nav-links a:focus-visible, .btn-login:focus-visible, .nova-menu-toggle:focus-visible, .landing-link-button:focus-visible {
   outline: 2px solid #1D9E75;
   outline-offset: 2px;
 }
@@ -178,6 +190,150 @@ footer { padding:1.5rem 2.5rem; text-align:center; border-top:1px solid #e8e8e8;
 .stat-box small { display:block; color:#777; margin-bottom:.25rem; }
 .stat-box strong { font-size:18px; color:#1D9E75; }
 .muted { color:#777; font-size:13px; }
+
+.about-page-card {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.about-page-card h2 {
+  font-family: 'Playfair Display', serif;
+  margin-bottom: 0.75rem;
+}
+
+.about-page-card p {
+  color: #5e6168;
+  line-height: 1.7;
+  margin-bottom: 0.6rem;
+}
+
+.about-team-grid {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.85rem;
+}
+
+.about-member-card {
+  border: 1px solid #ececec;
+  background: #fcfcfc;
+  border-radius: 10px;
+  padding: 0.9rem;
+}
+
+.about-member-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: #e1f5ee;
+  color: #0f6e56;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  margin-bottom: 0.55rem;
+}
+
+.about-member-card h3 {
+  font-size: 15px;
+  margin-bottom: 0.2rem;
+}
+
+.about-member-card p {
+  font-size: 13px;
+  margin-bottom: 0.55rem;
+}
+
+.about-member-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.about-member-links a {
+  text-decoration: none;
+  border: 1px solid #d6d6d6;
+  color: #40434b;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.about-member-links a:hover {
+  border-color: #1D9E75;
+  color: #1D9E75;
+}
+
+.about-contact-grid {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.about-contact-card {
+  background: #ffffff;
+  border: 1px solid #e8eeeb;
+  border-radius: 16px;
+  padding: 1rem;
+  text-align: center;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.about-contact-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.08);
+}
+
+.about-contact-role {
+  font-size: 12px;
+  color: #1D9E75;
+  margin-bottom: 0.35rem;
+  font-weight: 600;
+}
+
+.about-contact-name {
+  font-size: 18px;
+  margin-bottom: 0.35rem;
+}
+
+.about-contact-desc {
+  font-size: 13px;
+  color: #5e6168;
+  margin-bottom: 0.9rem;
+  line-height: 1.55;
+}
+
+.about-contact-icons {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.about-contact-icons a {
+  text-decoration: none;
+  font-size: 12px;
+  color: #245a4b;
+  background: #e1f5ee;
+  border-radius: 999px;
+  padding: 0.42rem 0.7rem;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.about-contact-icons a:hover {
+  background: #1D9E75;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.about-contact-icons span {
+  font-size: 12px;
+  color: #7a7d86;
+}
 
 .dot { animation: blink 1s infinite; }
 .dot:nth-child(2) { animation-delay: .15s; }
@@ -689,4 +845,291 @@ footer { padding:1.5rem 2.5rem; text-align:center; border-top:1px solid #e8e8e8;
   }
   .nova-nav-links .btn-login { border: 1px solid #d0d0d0; }
   .about-team { grid-template-columns: 1fr; }
+}
+
+/* ind2 theme harmonization */
+.nova-nav {
+  background: var(--bg);
+  border-bottom-color: var(--border);
+  backdrop-filter: blur(12px);
+}
+
+.nova-logo {
+  color: var(--text);
+}
+
+.nova-logo span,
+.hero h1 em,
+.section-label,
+.live-dot,
+.stat-box strong,
+.about-member-links a:hover,
+.about-member-avatar {
+  color: var(--accent);
+}
+
+.nova-nav-links a,
+.landing-link-button,
+.btn-login,
+.hero-sub,
+.feature-card p,
+.modal-card p,
+.modal-card label,
+.app-header p,
+.muted,
+.steps-list {
+  color: var(--text2);
+}
+
+.btn-login,
+.btn-secondary,
+.modal-card,
+.feature-card,
+.chat-card,
+.memory-card,
+.analytics-card,
+.about-page-card,
+.customer-pill,
+.chat-input-row input,
+.insights-form input,
+.insights-list-item,
+.case-card,
+.stat-box,
+.about-member-card,
+.about-member-links a,
+.team-card,
+.nova-menu-toggle {
+  border-color: var(--border);
+}
+
+.btn-login,
+.btn-secondary,
+.modal-card,
+.feature-card,
+.chat-card,
+.memory-card,
+.analytics-card,
+.about-page-card,
+.about-member-card,
+.team-card,
+.chat-input-row input,
+.nova-menu-toggle {
+  background: var(--surface);
+}
+
+.btn-primary,
+.bubble-user {
+  background: var(--accent);
+}
+
+.btn-primary:hover {
+  background: var(--accent2);
+}
+
+.badge,
+.feature-icon,
+.about-member-avatar,
+.insights-list-item.active,
+.pill {
+  background: var(--accentbg);
+}
+
+.hero,
+.features-section,
+.app-shell,
+.projects-hub,
+body {
+  background: var(--bg);
+}
+
+.app-header,
+footer {
+  background: var(--bg2);
+  border-color: var(--border);
+}
+
+.chat-body,
+.bubble-agent,
+.case-card,
+.stat-box,
+.insights-list-item,
+.insights-form input,
+.modal-card input,
+.about-member-card {
+  background: var(--bg2);
+}
+
+.modal-card input,
+.chat-input-row input,
+.insights-form input,
+.app-header-right,
+.about-page-card p,
+.about-member-card p,
+.about-member-links a,
+.case-card p,
+.stat-box small {
+  color: var(--text2);
+}
+
+.hero h1,
+.feature-card h3,
+.app-header h1,
+.chat-title,
+.memory-card h3,
+.analytics-card h3,
+.about-page-card h2,
+.about-member-card h3,
+.section-title,
+.modal-card h2,
+.modal-card label {
+  color: var(--text);
+}
+
+footer {
+  color: var(--text3);
+}
+
+@media (max-width: 900px) {
+  .nova-nav-links {
+    background: var(--surface);
+    border-color: var(--border);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .18);
+  }
+}
+
+/* Login page */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, var(--bg) 0%, var(--bg2) 100%);
+}
+
+.login-wrapper {
+  width: min(980px, 100%);
+  min-height: 540px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.16);
+}
+
+.login-left {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2.5rem;
+}
+
+.login-left h1 {
+  font-size: 40px;
+  margin-bottom: 0.8rem;
+}
+
+.login-left p {
+  font-size: 15px;
+  opacity: 0.9;
+  max-width: 320px;
+  line-height: 1.7;
+}
+
+.login-right {
+  background: var(--surface);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.login-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.login-topbar h2 {
+  color: var(--text);
+  font-size: 30px;
+}
+
+.login-input-box {
+  position: relative;
+  margin: 1rem 0;
+}
+
+.login-input-box input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  outline: none;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.login-input-box label {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  color: var(--text2);
+  font-size: 14px;
+  transition: 0.2s;
+  pointer-events: none;
+}
+
+.login-input-box input:focus + label,
+.login-input-box input:not(:placeholder-shown) + label {
+  top: -8px;
+  left: 10px;
+  font-size: 11px;
+  background: var(--surface);
+  padding: 0 5px;
+  color: var(--accent);
+}
+
+.login-toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.login-submit {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.login-actions-row {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 860px) {
+  .login-wrapper {
+    grid-template-columns: 1fr;
+    min-height: unset;
+  }
+
+  .login-left {
+    padding: 2rem;
+  }
+
+  .login-left h1 {
+    font-size: 32px;
+  }
 }

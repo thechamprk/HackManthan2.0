@@ -1,6 +1,6 @@
 .projects-hub {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background: linear-gradient(135deg, var(--bg) 0%, var(--bg2) 100%);
   padding: 3rem 2rem;
 }
 
@@ -16,14 +16,14 @@
 .hub-header h1 {
   margin: 0;
   font-size: 2.5rem;
-  color: #0f172a;
+  color: var(--text);
   font-weight: 700;
   letter-spacing: -0.02em;
 }
 
 .hub-header p {
   margin: 0.75rem 0 0 0;
-  color: #64748b;
+  color: var(--text2);
   font-size: 1rem;
   font-weight: 500;
 }

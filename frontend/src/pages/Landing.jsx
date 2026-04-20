@@ -2,20 +2,7 @@ import { useState } from 'react';
 import ThemeToggle from '../components/ThemeToggle';
 
 function Landing({ onNavigate }) {
-  const [showModal, setShowModal] = useState(false);
-  const [name, setName] = useState('');
-  const [customerId, setCustomerId] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  function handleSubmit(event) {
-    event.preventDefault();
-    if (!customerId.trim()) return;
-
-    const params = new URLSearchParams({ customerId: customerId.trim() });
-    if (name.trim()) params.set('name', name.trim());
-
-    onNavigate(`/app?${params.toString()}`);
-  }
 
   function smoothScrollTo(selector) {
     const target = document.querySelector(selector);
@@ -54,15 +41,16 @@ function Landing({ onNavigate }) {
           id="landing-navigation-links"
           className={`nova-nav-links ${isMobileMenuOpen ? 'open' : ''}`}
         >
-          <a
-            href="#about"
-            onClick={(e) => {
-              e.preventDefault();
-              smoothScrollTo('#about');
+          <button
+            type="button"
+            className="landing-link-button"
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+              onNavigate('/about');
             }}
           >
             About
-          </a>
+          </button>
           <a
             href="#features"
             onClick={(e) => {
@@ -78,7 +66,7 @@ function Landing({ onNavigate }) {
             className="btn-login"
             onClick={() => {
               setIsMobileMenuOpen(false);
-              setShowModal(true);
+              onNavigate('/login');
             }}
           >
             Login
@@ -92,11 +80,11 @@ function Landing({ onNavigate }) {
           AI support, <em>with memory</em>
         </h1>
         <p className="hero-sub">
-          HindsightHub helps teams resolve customer issues faster using persistent memory, contextual intelligence,
+          Hindsight Expert helps teams resolve customer issues faster using persistent memory, contextual intelligence,
           and elegant workflows.
         </p>
         <div className="cta-row">
-          <button className="btn-primary" type="button" onClick={() => setShowModal(true)}>
+          <button className="btn-primary" type="button" onClick={() => onNavigate('/login')}>
             Get started free
           </button>
           <button
@@ -142,93 +130,7 @@ function Landing({ onNavigate }) {
         </div>
       </section>
 
-      <section className="about-section" id="about">
-        <div className="about-text">
-          <div className="section-label">About Us</div>
-          <h2>Built for modern support teams</h2>
-          <p>
-            HindsightHub combines memory + AI to reduce repetitive handling, improve resolution quality, and help
-            agents respond with confidence.
-          </p>
-        </div>
-
-        <div className="about-content">
-          <div className="about-stats">
-            <div className="stat">
-              <div className="stat-num">24/7</div>
-              <div className="stat-label">AI Assistance</div>
-            </div>
-            <div className="stat">
-              <div className="stat-num">Fast</div>
-              <div className="stat-label">Response Time</div>
-            </div>
-            <div className="stat">
-              <div className="stat-num">Smart</div>
-              <div className="stat-label">Memory Recall</div>
-            </div>
-          </div>
-
-          <div className="about-team">
-            <div className="team-card">
-              <h3>Team Leader</h3>
-              <p>rounak</p>
-            </div>
-            <div className="team-card">
-              <h3>Team Member</h3>
-              <p>khushi</p>
-            </div>
-            <div className="team-card">
-              <h3>Team Member</h3>
-              <p>abhinav</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <footer>© 2026 hindsight.expert · All rights reserved.</footer>
-
-      {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <form
-            className="modal-card"
-            onSubmit={handleSubmit}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2>Welcome to HindsightHub</h2>
-            <p>Enter your details to continue</p>
-
-            <label>
-              Name
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Your name"
-              />
-            </label>
-
-            <label>
-              Customer ID
-              <input
-                type="text"
-                value={customerId}
-                onChange={(e) => setCustomerId(e.target.value)}
-                placeholder="cust_001"
-                required
-              />
-            </label>
-
-            <div className="modal-actions">
-              <button type="button" className="btn-secondary" onClick={() => setShowModal(false)}>
-                Cancel
-              </button>
-              <button type="submit" className="btn-primary">
-                Continue
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
+      <footer>© 2026 Hindsight Expert · All rights reserved.</footer>
     </div>
   );
 }
