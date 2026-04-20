@@ -7,7 +7,9 @@ const storedTheme = typeof window !== 'undefined'
   ? localStorage.getItem('theme') || 'light'
   : 'light';
 
-document.documentElement.setAttribute('data-theme', storedTheme);
+if (typeof document !== 'undefined') {
+  document.documentElement.setAttribute('data-theme', storedTheme);
+}
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>

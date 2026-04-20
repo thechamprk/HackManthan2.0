@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 
+const getNextTaskId = (items) => items.reduce((maxId, task) => Math.max(maxId, task.id), 0) + 1;
+
 export default function AIToDoForm() {
   const moduleOptions = [
     'Project HUB',
@@ -8,7 +10,7 @@ export default function AIToDoForm() {
     'Deep Search'
   ];
 
-  const [tasks, setTasks] = useState([
+  const initialTasks = [
     {
       id: 1,
       title: 'Finalize sprint plan',
@@ -25,12 +27,17 @@ export default function AIToDoForm() {
       status: 'in_progress',
       progressNote: 'Initial competitor list has been prepared.'
     }
-  ]);
+  ];
+
+  const [tasks, setTasks] = useState(initialTasks);
   const [newTask, setNewTask] = useState({
     title: '',
     description: '',
     module: moduleOptions[0]
   });
+  const [nextTaskId, setNextTaskId] = useState(() => getNextTaskId(initialTasks));
+  const [formError, setFormError] = useState('');
+  const [deleteCandidateId, setDeleteCandidateId] = useState(null);
 
   const statusLabels = {
     pending: 'Pending',
@@ -47,12 +54,16 @@ export default function AIToDoForm() {
     event.preventDefault();
     const title = newTask.title.trim();
     const description = newTask.description.trim();
-    if (!title || !description) return;
+    if (!title || !description) {
+      setFormError('Please add both task title and description.');
+      return;
+    }
+    setFormError('');
 
     setTasks((prev) => [
       ...prev,
       {
-        id: Date.now(),
+        id: nextTaskId,
         title,
         description,
         module: newTask.module,
@@ -60,6 +71,7 @@ export default function AIToDoForm() {
         progressNote: ''
       }
     ]);
+    setNextTaskId((prev) => prev + 1);
     setNewTask({
       title: '',
       description: '',
@@ -68,7 +80,13 @@ export default function AIToDoForm() {
   };
 
   const handleDeleteTask = (id) => {
-    setTasks((prev) => prev.filter((task) => task.id !== id));
+    if (deleteCandidateId === id) {
+      setTasks((prev) => prev.filter((task) => task.id !== id));
+      setDeleteCandidateId(null);
+      return;
+    }
+
+    setDeleteCandidateId(id);
   };
 
   const handleStatusChange = (id, status) => {
@@ -82,13 +100,20 @@ export default function AIToDoForm() {
   return (
     <div>
       <form onSubmit={handleCreateTask} style={{ marginBottom: '1.5rem' }}>
-        <h3 style={{ marginBottom: '1rem', color: '#0f172a' }}>Create a task from the four options</h3>
+        <h3 style={{ marginBottom: '1rem', color: '#0f172a' }}>Create a task from available options</h3>
         <div style={{ marginBottom: '0.75rem' }}>
+          <label htmlFor="task-title" style={{ display: 'block', marginBottom: '0.35rem', color: '#334155', fontSize: '0.85rem' }}>
+            Task title
+          </label>
           <input
+            id="task-title"
             type="text"
             placeholder="Task title"
             value={newTask.title}
-            onChange={(event) => setNewTask((prev) => ({ ...prev, title: event.target.value }))}
+            onChange={(event) => {
+              setNewTask((prev) => ({ ...prev, title: event.target.value }));
+              setFormError('');
+            }}
             style={{
               width: '100%',
               padding: '0.75rem',
@@ -99,10 +124,17 @@ export default function AIToDoForm() {
           />
         </div>
         <div style={{ marginBottom: '0.75rem' }}>
+          <label htmlFor="task-description" style={{ display: 'block', marginBottom: '0.35rem', color: '#334155', fontSize: '0.85rem' }}>
+            Task description
+          </label>
           <textarea
+            id="task-description"
             placeholder="Short description"
             value={newTask.description}
-            onChange={(event) => setNewTask((prev) => ({ ...prev, description: event.target.value }))}
+            onChange={(event) => {
+              setNewTask((prev) => ({ ...prev, description: event.target.value }));
+              setFormError('');
+            }}
             rows="3"
             style={{
               width: '100%',
@@ -116,7 +148,11 @@ export default function AIToDoForm() {
           />
         </div>
         <div style={{ marginBottom: '1rem' }}>
+          <label htmlFor="task-module" style={{ display: 'block', marginBottom: '0.35rem', color: '#334155', fontSize: '0.85rem' }}>
+            Option
+          </label>
           <select
+            id="task-module"
             value={newTask.module}
             onChange={(event) => setNewTask((prev) => ({ ...prev, module: event.target.value }))}
             style={{
@@ -135,6 +171,9 @@ export default function AIToDoForm() {
             ))}
           </select>
         </div>
+        {formError ? (
+          <p style={{ marginBottom: '0.75rem', color: '#b91c1c', fontSize: '0.85rem' }}>{formError}</p>
+        ) : null}
         <button
           type="submit"
           style={{
@@ -169,96 +208,103 @@ export default function AIToDoForm() {
         <h3 style={{ marginBottom: '1rem', color: '#0f172a' }}>Assigned tasks</h3>
         {tasks.length === 0 ? (
           <p style={{ color: '#64748b' }}>No tasks assigned yet.</p>
-        ) : tasks.map((task) => (
-          <div
-            key={task.id}
-            style={{
-              marginBottom: '1rem',
-              border: '1px solid #e2e8f0',
-              borderRadius: '8px',
-              padding: '1rem',
-              background: '#ffffff'
-            }}
-          >
+        ) : (
+          tasks.map((task) => (
             <div
+              key={task.id}
               style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                gap: '1rem',
-                marginBottom: '0.75rem'
+                marginBottom: '1rem',
+                border: '1px solid #e2e8f0',
+                borderRadius: '8px',
+                padding: '1rem',
+                background: '#ffffff'
               }}
             >
-              <div>
-                <strong style={{ color: '#0f172a', fontSize: '0.95rem' }}>{task.title}</strong>
-                <p style={{ color: '#64748b', marginTop: '0.3rem', fontSize: '0.9rem' }}>{task.description}</p>
-                <p style={{ color: '#334155', marginTop: '0.35rem', fontSize: '0.85rem' }}>
-                  Option: <strong>{task.module}</strong>
-                </p>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: '1rem',
+                  marginBottom: '0.75rem'
+                }}
+              >
+                <div>
+                  <strong style={{ color: '#0f172a', fontSize: '0.95rem' }}>{task.title}</strong>
+                  <p style={{ color: '#64748b', marginTop: '0.3rem', fontSize: '0.9rem' }}>{task.description}</p>
+                  <p style={{ color: '#334155', marginTop: '0.35rem', fontSize: '0.85rem' }}>
+                    Option: <strong>{task.module}</strong>
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteTask(task.id)}
+                  style={{
+                    padding: '0.5rem 0.75rem',
+                    borderRadius: '6px',
+                    border: '1px solid #fecaca',
+                    background: '#fef2f2',
+                    color: '#b91c1c',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {deleteCandidateId === task.id ? 'Confirm delete' : 'Delete'}
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => handleDeleteTask(task.id)}
-                style={{
-                  padding: '0.5rem 0.75rem',
-                  borderRadius: '6px',
-                  border: '1px solid #fecaca',
-                  background: '#fef2f2',
-                  color: '#b91c1c',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap'
-                }}
-              >
-                Delete
-              </button>
-            </div>
+              {deleteCandidateId === task.id ? (
+                <p style={{ margin: '0 0 0.75rem 0', color: '#b45309', fontSize: '0.8rem' }}>
+                  Click &quot;Confirm delete&quot; to remove this task.
+                </p>
+              ) : null}
 
-            <div style={{ marginBottom: '0.75rem' }}>
-              <label style={{ display: 'block', marginBottom: '0.35rem', color: '#334155', fontSize: '0.85rem' }}>
-                Progress status
-              </label>
-              <select
-                value={task.status}
-                onChange={(event) => handleStatusChange(task.id, event.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.55rem',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '6px',
-                  fontSize: '0.9rem',
-                  background: '#ffffff'
-                }}
-              >
-                {Object.entries(statusLabels).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </div>
+              <div style={{ marginBottom: '0.75rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.35rem', color: '#334155', fontSize: '0.85rem' }}>
+                  Progress status
+                </label>
+                <select
+                  value={task.status}
+                  onChange={(event) => handleStatusChange(task.id, event.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.55rem',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '6px',
+                    fontSize: '0.9rem',
+                    background: '#ffffff'
+                  }}
+                >
+                  {Object.entries(statusLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.35rem', color: '#334155', fontSize: '0.85rem' }}>
-                Progress note
-              </label>
-              <textarea
-                value={task.progressNote}
-                onChange={(event) => handleProgressNoteChange(task.id, event.target.value)}
-                rows="2"
-                placeholder="Add latest progress update..."
-                style={{
-                  width: '100%',
-                  padding: '0.55rem',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '6px',
-                  fontSize: '0.9rem',
-                  fontFamily: 'inherit',
-                  resize: 'vertical'
-                }}
-              />
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.35rem', color: '#334155', fontSize: '0.85rem' }}>
+                  Progress note
+                </label>
+                <textarea
+                  value={task.progressNote}
+                  onChange={(event) => handleProgressNoteChange(task.id, event.target.value)}
+                  rows="2"
+                  placeholder="Add latest progress update..."
+                  style={{
+                    width: '100%',
+                    padding: '0.55rem',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '6px',
+                    fontSize: '0.9rem',
+                    fontFamily: 'inherit',
+                    resize: 'vertical'
+                  }}
+                />
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );
