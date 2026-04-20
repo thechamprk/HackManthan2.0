@@ -30,7 +30,7 @@ export default function ThemeToggle() {
       className="theme-toggle"
       onClick={toggleTheme}
       title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-      aria-label={`Toggle ${theme} mode`}
+      aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
       type="button"
     >
       <span className="theme-toggle-icon">
