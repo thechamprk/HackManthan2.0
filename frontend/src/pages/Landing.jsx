@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ThemeToggle from '../components/ThemeToggle';
 
 function Landing({ onNavigate }) {
   const [showModal, setShowModal] = useState(false);
@@ -53,6 +54,7 @@ function Landing({ onNavigate }) {
           >
             Features
           </a>
+          <ThemeToggle />
           <button type="button" className="btn-login" onClick={() => setShowModal(true)}>
             Login
           </button>

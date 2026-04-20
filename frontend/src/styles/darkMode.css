@@ -1,0 +1,289 @@
+/* Dark Mode Color Variables */
+:root {
+  --color-bg-light: #fff;
+  --color-bg-light-secondary: #f8f9fb;
+  --color-bg-light-tertiary: #f7f7f5;
+  --color-text-light: #1a1a1a;
+  --color-text-light-secondary: #555;
+  --color-text-light-tertiary: #666;
+  --color-border-light: #e8e8e8;
+  --color-accent: #1d9e75;
+  --color-accent-light: #e1f5ee;
+}
+
+/* Dark Mode Theme */
+[data-theme="dark"] {
+  --color-bg-light: #0f172a;
+  --color-bg-light-secondary: #1a1f3a;
+  --color-bg-light-tertiary: #1e293b;
+  --color-text-light: #e2e8f0;
+  --color-text-light-secondary: #94a3b8;
+  --color-text-light-tertiary: #64748b;
+  --color-border-light: #334155;
+  --color-accent: #10b981;
+  --color-accent-light: #064e3b;
+}
+
+/* Apply to All Elements */
+:root body {
+  background-color: var(--color-bg-light);
+  color: var(--color-text-light);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Navigation */
+:root .nova-nav {
+  background: var(--color-bg-light);
+  border-bottom-color: var(--color-border-light);
+}
+
+:root .nova-logo {
+  color: var(--color-text-light);
+}
+
+:root .nova-nav-links a,
+:root .btn-login {
+  color: var(--color-text-light-secondary);
+}
+
+:root .btn-login {
+  border-color: var(--color-border-light);
+}
+
+/* Buttons */
+:root .btn-primary {
+  background: var(--color-accent);
+  transition: all 0.3s ease;
+}
+
+:root .btn-secondary {
+  background: var(--color-bg-light);
+  color: var(--color-text-light-secondary);
+  border-color: var(--color-border-light);
+  transition: all 0.3s ease;
+}
+
+/* Hero Section */
+:root .hero h1,
+:root .hero h1 em {
+  color: var(--color-text-light);
+}
+
+:root .hero h1 em {
+  color: var(--color-accent);
+}
+
+:root .hero-sub {
+  color: var(--color-text-light-secondary);
+}
+
+:root .badge {
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+}
+
+/* Feature Cards */
+:root .feature-card {
+  background: var(--color-bg-light);
+  border-color: var(--color-border-light);
+}
+
+:root .feature-icon {
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+}
+
+:root .feature-card p {
+  color: var(--color-text-light-secondary);
+}
+
+/* About Section */
+:root .about-section {
+  background: var(--color-bg-light-tertiary);
+  border-color: var(--color-border-light);
+}
+
+:root .about-text h2,
+:root .about-text p {
+  color: var(--color-text-light);
+}
+
+:root .about-text p {
+  color: var(--color-text-light-secondary);
+}
+
+:root .stat-num {
+  color: var(--color-accent);
+}
+
+:root .stat-label {
+  color: var(--color-text-light-tertiary);
+}
+
+/* Divider */
+:root .divider {
+  background: var(--color-border-light);
+}
+
+/* Footer */
+:root footer {
+  border-top-color: var(--color-border-light);
+  color: var(--color-text-light-tertiary);
+  background: var(--color-bg-light);
+}
+
+/* Modal */
+:root .modal-card {
+  background: var(--color-bg-light);
+  border-color: var(--color-border-light);
+}
+
+:root .modal-card h2,
+:root .modal-card label {
+  color: var(--color-text-light);
+}
+
+:root .modal-card p {
+  color: var(--color-text-light-secondary);
+}
+
+:root .modal-card input {
+  background: var(--color-bg-light-secondary);
+  border-color: var(--color-border-light);
+  color: var(--color-text-light);
+}
+
+:root .modal-card input::placeholder {
+  color: var(--color-text-light-tertiary);
+}
+
+/* App Shell */
+:root .app-shell {
+  background: var(--color-bg-light-secondary);
+}
+
+:root .app-header {
+  background: var(--color-bg-light);
+  border-bottom-color: var(--color-border-light);
+}
+
+:root .app-header h1,
+:root .app-header-right {
+  color: var(--color-text-light);
+}
+
+:root .app-header p {
+  color: var(--color-text-light-secondary);
+}
+
+:root .live-dot {
+  background: var(--color-accent);
+}
+
+/* Chat Cards */
+:root .chat-card,
+:root .memory-card,
+:root .analytics-card {
+  background: var(--color-bg-light);
+  border-color: var(--color-border-light);
+}
+
+:root .chat-body {
+  background: var(--color-bg-light-secondary);
+  border-color: var(--color-border-light);
+}
+
+:root .bubble-user {
+  background: var(--color-accent);
+}
+
+:root .bubble-agent {
+  background: var(--color-bg-light-secondary);
+  color: var(--color-text-light);
+}
+
+:root .bubble-agent,
+:root .bubble small {
+  color: var(--color-text-light-secondary);
+}
+
+:root .chat-input-row input {
+  background: var(--color-bg-light);
+  border-color: var(--color-border-light);
+  color: var(--color-text-light);
+}
+
+:root .chat-input-row input::placeholder {
+  color: var(--color-text-light-tertiary);
+}
+
+/* Pills */
+:root .pill {
+  background: var(--color-bg-light-tertiary);
+  border-color: var(--color-border-light);
+  color: var(--color-accent);
+}
+
+:root .case-card {
+  background: var(--color-bg-light-secondary);
+  border-color: var(--color-border-light);
+}
+
+:root .stat-box {
+  background: var(--color-bg-light-secondary);
+  border-color: var(--color-border-light);
+}
+
+:root .stat-box strong {
+  color: var(--color-accent);
+}
+
+/* Insights */
+:root .insights-card {
+  background: var(--color-bg-light);
+  border-color: var(--color-border-light);
+}
+
+:root .insights-form input {
+  background: var(--color-bg-light-secondary);
+  border-color: var(--color-border-light);
+  color: var(--color-text-light);
+}
+
+:root .insights-form input::placeholder {
+  color: var(--color-text-light-tertiary);
+}
+
+:root .insights-list-item {
+  background: var(--color-bg-light-secondary);
+  border-color: var(--color-border-light);
+  color: var(--color-text-light);
+}
+
+:root .insights-list-item.active {
+  border-color: var(--color-accent);
+  background: var(--color-accent-light);
+}
+
+:root .muted,
+:root .stat-box small {
+  color: var(--color-text-light-tertiary);
+}
+
+/* Customer Pill */
+:root .customer-pill {
+  color: var(--color-text-light-secondary);
+  border-color: var(--color-border-light);
+}
+
+:root .section-label {
+  color: var(--color-accent);
+}
+
+:root .section-title,
+:root .insights-card h3,
+:root .memory-card h3,
+:root .analytics-card h3,
+:root .chat-title {
+  color: var(--color-text-light);
+}

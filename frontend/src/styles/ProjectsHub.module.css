@@ -7,6 +7,10 @@
 .hub-header {
   max-width: 1200px;
   margin: 0 auto 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
 .hub-header h1 {
