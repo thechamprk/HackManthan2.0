@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import MemoryContext from './MemoryContext';
-import { support } from '../utils/api';
+import { insights, support } from '../utils/api';
 
 function formatTime(isoDate) {
   return new Date(isoDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -119,6 +119,15 @@ function resolveTargetConversation(activeThread, allThreads, topic, cleanContent
   }
 
   return { targetConversation: activeThread, shouldInsert: false };
+}
+
+function isTaskInstruction(text = '') {
+  const normalized = String(text).toLowerCase();
+  return (
+    /^task\s*:/i.test(text) ||
+    /^todo\s*:/i.test(text) ||
+    /(create|generate|make|build|prepare|plan)\s+.*(task|tasks|todo|to-do|checklist)/i.test(normalized)
+  );
 }
 
 function ChatInterface({ customerId }) {
@@ -261,6 +270,38 @@ function ChatInterface({ customerId }) {
         lastMetadata: data,
         updatedAt: new Date().toISOString()
       }));
+
+      if (isTaskInstruction(cleanContent)) {
+        try {
+          const autoTaskPayload = await insights.createTasksFromInstruction({
+            instruction: cleanContent,
+            owner: customerId || 'guest'
+          });
+
+          if (autoTaskPayload?.success && autoTaskPayload?.data?.tasks?.length) {
+            const createdProject = autoTaskPayload.data.project;
+            const taskCount = autoTaskPayload.data.tasks.length;
+
+            updateConversation(targetConversationId, (thread) => ({
+              ...thread,
+              messages: [
+                ...thread.messages,
+                {
+                  id: `insights_${Date.now()}`,
+                  role: 'agent',
+                  content: `Created ${taskCount} task(s) in Insights under project "${createdProject?.name || 'AI Task Plan'}". Open iNSIGHTS to review and continue.`,
+                  timestamp: new Date().toISOString(),
+                  provider: 'insights',
+                  confidence: 1
+                }
+              ],
+              updatedAt: new Date().toISOString()
+            }));
+          }
+        } catch (_error) {
+          // Support response should still succeed even if insights automation fails.
+        }
+      }
     } catch (error) {
       updateConversation(targetConversationId, (thread) => ({
         ...thread,

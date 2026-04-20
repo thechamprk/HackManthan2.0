@@ -31,8 +31,15 @@ function Insights({ search, onNavigate }) {
       try {
         const payload = await insights.listProjects();
         if (mounted && payload?.success) {
-          setProjects(payload.data || []);
-          setSelectedProjectId((prev) => prev || payload.data?.[0]?.project_id || '');
+          const loadedProjects = payload.data || [];
+          setProjects(loadedProjects);
+          setSelectedProjectId((prev) => prev || loadedProjects?.[0]?.project_id || '');
+          if (loadedProjects?.[0]?.ai_tasks?.length) {
+            setTodoResult({
+              project: loadedProjects[0],
+              tasks: loadedProjects[0].ai_tasks
+            });
+          }
         }
       } catch (err) {
         if (mounted) setError(err.message);
@@ -57,6 +64,7 @@ function Insights({ search, onNavigate }) {
       const next = [payload.data, ...projects];
       setProjects(next);
       setSelectedProjectId(payload.data.project_id);
+      setTodoResult({ project: payload.data, tasks: payload.data.ai_tasks || [] });
       setProjectName('');
       setProjectGoal('');
     } catch (err) {
@@ -178,7 +186,10 @@ function Insights({ search, onNavigate }) {
                   type="button"
                   key={project.project_id}
                   className={`insights-list-item ${selectedProjectId === project.project_id ? 'active' : ''}`}
-                  onClick={() => setSelectedProjectId(project.project_id)}
+                  onClick={() => {
+                    setSelectedProjectId(project.project_id);
+                    setTodoResult({ project, tasks: project.ai_tasks || [] });
+                  }}
                 >
                   {project.name}
                 </button>

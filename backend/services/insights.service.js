@@ -60,6 +60,7 @@ function createProject({ name, goal, owner, timeline_weeks }) {
     owner: owner || 'unassigned',
     timeline_weeks: Number(timeline_weeks) || 4,
     status: 'active',
+    ai_tasks: [],
     created_at: now,
     updated_at: now
   };
@@ -121,13 +122,48 @@ async function generateAiTodoStructure({ project_id, context }) {
   const updated = {
     ...project,
     updated_at: new Date().toISOString(),
-    ai_todo_count: tasks.length
+    ai_todo_count: tasks.length,
+    ai_tasks: tasks
   };
   projects.set(project.project_id, updated);
 
   return {
     project: updated,
     tasks
+  };
+}
+
+function buildProjectNameFromInstruction(instruction = '') {
+  const clean = String(instruction).trim().replace(/\s+/g, ' ');
+  if (!clean) return 'AI Task Plan';
+  const words = clean.split(' ').slice(0, 6).join(' ');
+  return words.length > 48 ? `${words.slice(0, 48)}...` : words;
+}
+
+async function createTasksFromInstruction({ instruction, owner }) {
+  const cleanInstruction = String(instruction || '').trim();
+  if (!cleanInstruction) {
+    const error = new Error('Instruction is required');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const project = createProject({
+    name: buildProjectNameFromInstruction(cleanInstruction),
+    goal: cleanInstruction,
+    owner: owner || 'unassigned',
+    timeline_weeks: 4
+  });
+
+  const todoPayload = await generateAiTodoStructure({
+    project_id: project.project_id,
+    context: cleanInstruction
+  });
+
+  return {
+    trigger: 'instruction_auto_create',
+    project: todoPayload.project,
+    tasks: todoPayload.tasks
   };
 }
 
@@ -207,6 +243,7 @@ module.exports = {
   listProjects,
   createProject,
   generateAiTodoStructure,
+  createTasksFromInstruction,
   searchGrants,
   continueOnboarding,
   deepSearchSummary

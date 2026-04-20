@@ -68,6 +68,11 @@ export const insights = {
     request('/api/insights/search/summary', {
       method: 'POST',
       data: payload
+    }),
+  createTasksFromInstruction: async (payload) =>
+    request('/api/insights/tasks/from-instruction', {
+      method: 'POST',
+      data: payload
     })
 };
 

@@ -6,6 +6,7 @@ const {
   listProjects,
   createProject,
   generateAiTodoStructure,
+  createTasksFromInstruction,
   searchGrants,
   continueOnboarding,
   deepSearchSummary
@@ -38,6 +39,11 @@ const onboardingSchema = z.object({
 const deepSearchSchema = z.object({
   query: z.string().trim().min(2),
   limit: z.number().int().min(1).max(20).optional()
+});
+
+const instructionTaskSchema = z.object({
+  instruction: z.string().trim().min(5).max(1000),
+  owner: z.string().trim().max(100).optional()
 });
 
 router.get('/projects', (_req, res) => {
@@ -131,6 +137,26 @@ router.post('/search/summary', async (req, res, next) => {
     const parsed = deepSearchSchema.parse(req.body || {});
     const summary = await deepSearchSummary(parsed);
     return res.status(HTTP_STATUS.OK).json(successResponse(summary));
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        success: false,
+        error: {
+          message: 'Invalid request body',
+          details: error.flatten()
+        }
+      });
+    }
+    error.statusCode = error.statusCode || HTTP_STATUS.INTERNAL_SERVER_ERROR;
+    return next(error);
+  }
+});
+
+router.post('/tasks/from-instruction', async (req, res, next) => {
+  try {
+    const parsed = instructionTaskSchema.parse(req.body || {});
+    const payload = await createTasksFromInstruction(parsed);
+    return res.status(HTTP_STATUS.OK).json(successResponse(payload));
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
