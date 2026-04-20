@@ -782,7 +782,6 @@ footer { padding:1.5rem 2.5rem; text-align:center; border-top:1px solid #e8e8e8;
   .nova-nav { padding:0 1.25rem; }
   .hero, .features-section, .workflow-section { padding-left:1.25rem; padding-right:1.25rem; }
   .trust-strip { padding: 0 1.25rem; }
-  .hero-preview { grid-template-columns: 1fr; }
   .about-section { margin:0 1.25rem 3rem; padding:2rem; }
   .divider { margin:0 1.25rem; }
 }
