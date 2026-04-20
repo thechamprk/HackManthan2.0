@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import styles from '../styles/ProjectModal.module.css';
 
 export default function ProjectModal({
@@ -7,6 +7,21 @@ export default function ProjectModal({
   onClose,
   children
 }) {
+  useEffect(() => {
+    if (!isOpen) return undefined;
+
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
@@ -23,6 +38,7 @@ export default function ProjectModal({
           <button
             className={styles['close-btn']}
             onClick={onClose}
+            aria-label="Close modal"
           >
             ✕
           </button>

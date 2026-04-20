@@ -7,8 +7,21 @@ export default function ProjectTile({
   icon,
   onClick
 }) {
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onClick();
+    }
+  };
+
   return (
-    <div className={styles['project-tile']} onClick={onClick}>
+    <div
+      className={styles['project-tile']}
+      onClick={onClick}
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
+    >
       <div className={styles['tile-icon']}>{icon}</div>
       <h3>{title}</h3>
       <p>{description}</p>

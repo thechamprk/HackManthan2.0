@@ -25,7 +25,7 @@ export default function DeepSearchForm() {
     <div>
       <div style={{ marginBottom: '1.5rem' }}>
         <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#0f172a' }}>
-          Search about AI
+          Search About AI
         </label>
         <textarea
           placeholder="Enter your search query..."

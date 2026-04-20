@@ -6,6 +6,10 @@ export default function ProjectHubForm({ onClose }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const handleAgenticAi = () => {
+    console.log('Agentic AI action clicked');
+  };
+
   const handleCreateProject = async (e) => {
     e.preventDefault();
 
@@ -107,6 +111,7 @@ export default function ProjectHubForm({ onClose }) {
         </button>
         <button
           type="button"
+          onClick={handleAgenticAi}
           style={{
             flex: 1,
             padding: '0.75rem 1.5rem',
