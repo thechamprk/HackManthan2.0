@@ -64,6 +64,15 @@ function Landing({ onNavigate }) {
             About
           </a>
           <a
+            href="#workflow"
+            onClick={(e) => {
+              e.preventDefault();
+              smoothScrollTo('#workflow');
+            }}
+          >
+            Workflow
+          </a>
+          <a
             href="#features"
             onClick={(e) => {
               e.preventDefault();
@@ -87,14 +96,19 @@ function Landing({ onNavigate }) {
       </nav>
 
       <section className="hero">
-        <div className="badge">Now in public beta</div>
+        <div className="badge">Built for modern support operations</div>
         <h1>
-          AI support, <em>with memory</em>
+          Better support outcomes, <em>without the chaos</em>
         </h1>
         <p className="hero-sub">
-          HindsightHub helps teams resolve customer issues faster using persistent memory, contextual intelligence,
-          and elegant workflows.
+          HindsightHub gives your team structured context, faster handoffs, and clear next steps so every customer
+          conversation feels consistent and professional.
         </p>
+        <div className="hero-highlights">
+          <span>Context-first workflows</span>
+          <span>Faster case handling</span>
+          <span>Consistent quality</span>
+        </div>
         <div className="cta-row">
           <button className="btn-primary" type="button" onClick={() => setShowModal(true)}>
             Get started free
@@ -107,9 +121,66 @@ function Landing({ onNavigate }) {
             See features →
           </button>
         </div>
+        <div className="hero-preview">
+          <div className="preview-card">
+            <p>Live support queue</p>
+            <strong>18 active conversations</strong>
+            <span>Average first response: 2m 14s</span>
+          </div>
+          <div className="preview-card">
+            <p>Knowledge confidence</p>
+            <strong>92%</strong>
+            <span>Based on historical resolution quality</span>
+          </div>
+          <div className="preview-card">
+            <p>Escalation health</p>
+            <strong>Low risk</strong>
+            <span>Only 3 cases need senior review</span>
+          </div>
+        </div>
       </section>
 
       <div className="divider" />
+
+      <section className="trust-strip">
+        <p>Designed for teams that need clarity, speed, and reliable customer communication.</p>
+        <div className="trust-metrics">
+          <div>
+            <strong>24/7</strong>
+            <span>Operational visibility</span>
+          </div>
+          <div>
+            <strong>Unified</strong>
+            <span>Case timeline</span>
+          </div>
+          <div>
+            <strong>Actionable</strong>
+            <span>Support insights</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="workflow-section" id="workflow">
+        <div className="section-label">Workflow</div>
+        <div className="section-title">A cleaner way to run support</div>
+        <div className="workflow-grid">
+          <article className="workflow-step">
+            <span>01</span>
+            <h3>Capture context once</h3>
+            <p>Collect customer background and interaction history in one shared view.</p>
+          </article>
+          <article className="workflow-step">
+            <span>02</span>
+            <h3>Respond with confidence</h3>
+            <p>Use relevant case memory to deliver answers that stay aligned across the team.</p>
+          </article>
+          <article className="workflow-step">
+            <span>03</span>
+            <h3>Improve every cycle</h3>
+            <p>Review trends and outcomes to continuously improve response quality and speed.</p>
+          </article>
+        </div>
+      </section>
 
       <section className="features-section" id="features">
         <div className="section-label">Features</div>
@@ -119,25 +190,25 @@ function Landing({ onNavigate }) {
           <div className="feature-card">
             <div className="feature-icon">🧠</div>
             <h3>Persistent Memory</h3>
-            <p>Store and recall past support interactions to deliver context-aware responses every time.</p>
+            <p>Bring past interactions into the present so agents never start from zero.</p>
           </div>
 
           <div className="feature-card">
             <div className="feature-icon">⚡</div>
-            <h3>Fast AI Responses</h3>
-            <p>Powered by modern LLMs for fast, reliable and human-like support conversations.</p>
+            <h3>Rapid Guidance</h3>
+            <p>Keep replies quick and accurate with contextual prompts tailored to active cases.</p>
           </div>
 
           <div className="feature-card">
             <div className="feature-icon">📈</div>
-            <h3>Pattern Learning</h3>
-            <p>Detect repeated issue patterns and improve guidance quality continuously.</p>
+            <h3>Pattern Tracking</h3>
+            <p>Spot recurring issues early and standardize high-quality resolution playbooks.</p>
           </div>
 
           <div className="feature-card">
             <div className="feature-icon">📊</div>
             <h3>Analytics Dashboard</h3>
-            <p>Visualize interaction trends, confidence and outcomes with real-time metrics.</p>
+            <p>Understand team performance, resolution velocity, and escalation trends in real time.</p>
           </div>
         </div>
       </section>
@@ -171,15 +242,15 @@ function Landing({ onNavigate }) {
           <div className="about-team">
             <div className="team-card">
               <h3>Team Leader</h3>
-              <p>rounak</p>
+              <p>Rounak</p>
             </div>
             <div className="team-card">
               <h3>Team Member</h3>
-              <p>khushi</p>
+              <p>Khushi</p>
             </div>
             <div className="team-card">
               <h3>Team Member</h3>
-              <p>abhinav</p>
+              <p>Abhinav</p>
             </div>
           </div>
         </div>

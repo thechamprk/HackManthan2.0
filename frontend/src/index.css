@@ -65,6 +65,21 @@ body {
 }
 .hero h1 em { color:#1D9E75; font-style:italic; }
 .hero-sub { color:#666; font-size:17px; line-height:1.7; max-width:520px; margin:0 auto 2.5rem; }
+.hero-highlights {
+  display: flex;
+  justify-content: center;
+  gap: .55rem;
+  flex-wrap: wrap;
+  margin: 0 auto 1.6rem;
+}
+.hero-highlights span {
+  border: 1px solid var(--color-border-light);
+  background: var(--color-bg-light-secondary);
+  color: var(--color-text-light-secondary);
+  border-radius: 999px;
+  padding: .32rem .7rem;
+  font-size: 12px;
+}
 .cta-row { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
 .btn-primary {
   padding:12px 28px; font-size:14px; font-weight:500; background:#1D9E75; color:#fff;
@@ -73,8 +88,115 @@ body {
 .btn-secondary {
   padding:12px 28px; font-size:14px; border:1px solid #d0d0d0; border-radius:8px; background:#fff; color:#555; cursor:pointer;
 }
+.hero-preview {
+  margin-top: 2rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.preview-card {
+  text-align: left;
+  border: 1px solid var(--color-border-light);
+  background: linear-gradient(180deg, var(--color-bg-light), var(--color-bg-light-secondary));
+  border-radius: 12px;
+  padding: .95rem .9rem;
+}
+.preview-card p {
+  font-size: 12px;
+  color: var(--color-text-light-secondary);
+  margin-bottom: .45rem;
+}
+.preview-card strong {
+  display: block;
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  color: var(--color-text-light);
+  margin-bottom: .35rem;
+}
+.preview-card span {
+  font-size: 12px;
+  color: var(--color-text-light-tertiary);
+  line-height: 1.45;
+}
 
 .divider { height:1px; background:#e8e8e8; margin:0 2.5rem; }
+
+.trust-strip {
+  max-width: 980px;
+  margin: 2.5rem auto 1.25rem;
+  padding: 0 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.trust-strip p {
+  color: var(--color-text-light-secondary);
+  max-width: 460px;
+  line-height: 1.65;
+  font-size: 14px;
+}
+.trust-metrics {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.trust-metrics div {
+  border: 1px solid var(--color-border-light);
+  background: var(--color-bg-light);
+  border-radius: 10px;
+  padding: .7rem .9rem;
+  min-width: 140px;
+}
+.trust-metrics strong {
+  display: block;
+  font-size: 16px;
+  color: var(--color-text-light);
+  margin-bottom: .25rem;
+}
+.trust-metrics span {
+  font-size: 12px;
+  color: var(--color-text-light-tertiary);
+}
+
+.workflow-section {
+  max-width: 980px;
+  margin: 1rem auto 0;
+  padding: 2.5rem;
+}
+.workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.workflow-step {
+  border: 1px solid var(--color-border-light);
+  border-radius: 12px;
+  background: var(--color-bg-light);
+  padding: 1rem;
+}
+.workflow-step span {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+  font-size: 12px;
+  margin-bottom: .85rem;
+}
+.workflow-step h3 {
+  font-size: 15px;
+  margin-bottom: .45rem;
+  color: var(--color-text-light);
+}
+.workflow-step p {
+  font-size: 13px;
+  color: var(--color-text-light-secondary);
+  line-height: 1.6;
+}
 
 .features-section { padding:4rem 2.5rem; max-width:860px; margin:0 auto; }
 .section-label { font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:#1D9E75; margin-bottom:.75rem; }
@@ -658,7 +780,9 @@ footer { padding:1.5rem 2.5rem; text-align:center; border-top:1px solid #e8e8e8;
 @media (max-width: 600px) {
   .hero h1 { font-size:36px; }
   .nova-nav { padding:0 1.25rem; }
-  .hero, .features-section { padding-left:1.25rem; padding-right:1.25rem; }
+  .hero, .features-section, .workflow-section { padding-left:1.25rem; padding-right:1.25rem; }
+  .trust-strip { padding: 0 1.25rem; }
+  .hero-preview { grid-template-columns: 1fr; }
   .about-section { margin:0 1.25rem 3rem; padding:2rem; }
   .divider { margin:0 1.25rem; }
 }
@@ -689,4 +813,15 @@ footer { padding:1.5rem 2.5rem; text-align:center; border-top:1px solid #e8e8e8;
   }
   .nova-nav-links .btn-login { border: 1px solid #d0d0d0; }
   .about-team { grid-template-columns: 1fr; }
+  .trust-strip {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .8rem;
+  }
+  .workflow-grid {
+    grid-template-columns: 1fr;
+  }
+  .hero-preview {
+    grid-template-columns: 1fr;
+  }
 }
