@@ -5,6 +5,7 @@ function Landing({ onNavigate }) {
   const [showModal, setShowModal] = useState(false);
   const [name, setName] = useState('');
   const [customerId, setCustomerId] = useState('');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -19,6 +20,7 @@ function Landing({ onNavigate }) {
   function smoothScrollTo(selector) {
     const target = document.querySelector(selector);
     if (target) target.scrollIntoView({ behavior: 'smooth' });
+    setIsMobileMenuOpen(false);
   }
 
   return (
@@ -35,7 +37,23 @@ function Landing({ onNavigate }) {
           hindsight<span>.</span>
         </a>
 
-        <div className="nova-nav-links">
+        <button
+          type="button"
+          className="nova-menu-toggle"
+          aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-expanded={isMobileMenuOpen}
+          aria-controls="landing-navigation-links"
+          onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+
+        <div
+          id="landing-navigation-links"
+          className={`nova-nav-links ${isMobileMenuOpen ? 'open' : ''}`}
+        >
           <a
             href="#about"
             onClick={(e) => {
@@ -55,7 +73,14 @@ function Landing({ onNavigate }) {
             Features
           </a>
           <ThemeToggle />
-          <button type="button" className="btn-login" onClick={() => setShowModal(true)}>
+          <button
+            type="button"
+            className="btn-login"
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+              setShowModal(true);
+            }}
+          >
             Login
           </button>
         </div>
@@ -119,7 +144,7 @@ function Landing({ onNavigate }) {
 
       <section className="about-section" id="about">
         <div className="about-text">
-          <div className="section-label">About</div>
+          <div className="section-label">About Us</div>
           <h2>Built for modern support teams</h2>
           <p>
             HindsightHub combines memory + AI to reduce repetitive handling, improve resolution quality, and help
@@ -127,23 +152,40 @@ function Landing({ onNavigate }) {
           </p>
         </div>
 
-        <div className="about-stats">
-          <div className="stat">
-            <div className="stat-num">24/7</div>
-            <div className="stat-label">AI Assistance</div>
+        <div className="about-content">
+          <div className="about-stats">
+            <div className="stat">
+              <div className="stat-num">24/7</div>
+              <div className="stat-label">AI Assistance</div>
+            </div>
+            <div className="stat">
+              <div className="stat-num">Fast</div>
+              <div className="stat-label">Response Time</div>
+            </div>
+            <div className="stat">
+              <div className="stat-num">Smart</div>
+              <div className="stat-label">Memory Recall</div>
+            </div>
           </div>
-          <div className="stat">
-            <div className="stat-num">Fast</div>
-            <div className="stat-label">Response Time</div>
-          </div>
-          <div className="stat">
-            <div className="stat-num">Smart</div>
-            <div className="stat-label">Memory Recall</div>
+
+          <div className="about-team">
+            <div className="team-card">
+              <h3>Team Leader</h3>
+              <p>rounak</p>
+            </div>
+            <div className="team-card">
+              <h3>Team Member</h3>
+              <p>khushi</p>
+            </div>
+            <div className="team-card">
+              <h3>Team Member</h3>
+              <p>abhinav</p>
+            </div>
           </div>
         </div>
       </section>
 
-      <footer>© 2026 HindsightHub · All rights reserved.</footer>
+      <footer>© 2026 hindsight.expert · All rights reserved.</footer>
 
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
