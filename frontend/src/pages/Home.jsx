@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import ChatInterface from '../components/ChatInterface';
 import Analytics from '../components/Analytics';
+import ThemeToggle from '../components/ThemeToggle';
 
 function Home({ search, onNavigate }) {
   const params = useMemo(() => new URLSearchParams(search), [search]);
@@ -26,6 +27,7 @@ function Home({ search, onNavigate }) {
             <span className="live-dot" />
             Live
           </span>
+          <ThemeToggle />
           <button className="btn-secondary" onClick={() => onNavigate(`/insights${search || ''}`)}>
             iNSIGHTS
           </button>

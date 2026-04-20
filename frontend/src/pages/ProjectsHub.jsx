@@ -5,6 +5,7 @@ import ProjectHubForm from '../components/ProjectHubForm';
 import AIToDoForm from '../components/AIToDoForm';
 import GrantsForm from '../components/GrantsForm';
 import DeepSearchForm from '../components/DeepSearchForm';
+import ThemeToggle from '../components/ThemeToggle';
 import styles from '../styles/ProjectsHub.module.css';
 
 export default function ProjectsHub() {
@@ -40,8 +41,11 @@ export default function ProjectsHub() {
   return (
     <div className={styles['projects-hub']}>
       <header className={styles['hub-header']}>
-        <h1>INSIGHTS</h1>
-        <p>Project execution + intelligence modules</p>
+        <div>
+          <h1>INSIGHTS</h1>
+          <p>Project execution + intelligence modules</p>
+        </div>
+        <ThemeToggle />
       </header>
 
       <div className={styles['tiles-grid']}>

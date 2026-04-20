@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { insights } from '../utils/api';
+import ThemeToggle from '../components/ThemeToggle';
 
 function Insights({ search, onNavigate }) {
   const params = new URLSearchParams(search);
@@ -117,6 +118,7 @@ function Insights({ search, onNavigate }) {
         </div>
         <div className="app-header-right">
           <span>Customer: {customerName}</span>
+          <ThemeToggle />
           <button
             className="btn-secondary"
             onClick={() => onNavigate(customerId ? `/app?${params.toString()}` : '/')}
