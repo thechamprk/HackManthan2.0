@@ -95,6 +95,21 @@ function Landing({ onNavigate }) {
             See features →
           </button>
         </div>
+
+        <div className="hero-metrics">
+          <article className="hero-metric">
+            <strong>99.9%</strong>
+            <span>API uptime</span>
+          </article>
+          <article className="hero-metric">
+            <strong>40% faster</strong>
+            <span>issue triage</span>
+          </article>
+          <article className="hero-metric">
+            <strong>Always on</strong>
+            <span>memory continuity</span>
+          </article>
+        </div>
       </section>
 
       <div className="divider" />
@@ -127,6 +142,25 @@ function Landing({ onNavigate }) {
             <h3>Analytics Dashboard</h3>
             <p>Visualize interaction trends, confidence and outcomes with real-time metrics.</p>
           </div>
+        </div>
+      </section>
+
+      <section className="use-cases-section">
+        <div className="section-label">Built For Teams</div>
+        <div className="section-title">Practical workflows, not gimmicks</div>
+        <div className="use-cases-grid">
+          <article className="use-case-card">
+            <h3>Support Operations</h3>
+            <p>Keep every customer thread contextual so agents do not ask the same questions twice.</p>
+          </article>
+          <article className="use-case-card">
+            <h3>Founders & Product Leads</h3>
+            <p>Turn support conversations into recurring issue patterns and informed roadmap decisions.</p>
+          </article>
+          <article className="use-case-card">
+            <h3>Growing Teams</h3>
+            <p>Onboard new teammates faster with persisted interaction history and clear AI recommendations.</p>
+          </article>
         </div>
       </section>
 

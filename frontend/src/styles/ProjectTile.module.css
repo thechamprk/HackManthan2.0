@@ -26,21 +26,22 @@
 .project-tile h3 {
   margin: 0;
   color: var(--text);
-  font-size: 1.25rem;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
   font-weight: 600;
 }
 
 .project-tile p {
   margin: 0;
   color: var(--text2);
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   line-height: 1.5;
 }
 
 .tile-action {
   color: var(--accent);
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
   opacity: 0;
   transform: translateX(-4px);
   transition: all 0.3s ease;

@@ -2,8 +2,8 @@ import ThemeToggle from '../components/ThemeToggle';
 
 const teamMembers = [
   {
-    name: 'Rounak Kumar Mahato',
-    role: 'Team Leader · Backend',
+    name: 'Rounak Kumar Mahto',
+    role: 'Backend Developer',
     description: 'Handled backend architecture and core system logic.',
     linkedin: 'https://www.linkedin.com/in/rounak-kumar-mahto/',
     email: 'rounak.k.mahto@gmail.com',
@@ -11,7 +11,7 @@ const teamMembers = [
   },
   {
     name: 'Khushi Kumari',
-    role: 'API Integration',
+    role: 'Frontend Developer',
     description: 'Integrated APIs and ensured smooth data communication.',
     linkedin: 'https://www.linkedin.com/in/khushi-kumari-654617325/',
     email: 'khushi.ece.rec@gmail.com',
@@ -19,11 +19,29 @@ const teamMembers = [
   },
   {
     name: 'Abhinav Kumar',
-    role: 'Frontend Developer',
+    role: 'API Integration and UI/UX Design',
     description: 'Designed and developed user interface and experience.',
     linkedin: '',
     email: 'yt184ab@gmail.com',
     github: 'https://github.com/star-abv'
+  }
+];
+
+const useCases = [
+  {
+    title: 'E-commerce Support Desk',
+    scenario: 'Returning customers contact support about delayed orders and replacements across multiple sessions.',
+    outcome: 'Agents see prior context instantly, reduce repeat questions, and resolve order issues faster.'
+  },
+  {
+    title: 'SaaS Product Assistance',
+    scenario: 'Users report onboarding friction, feature confusion, and setup blockers during trial periods.',
+    outcome: 'The system groups repeated issues, suggests next steps, and helps teams improve activation flows.'
+  },
+  {
+    title: 'EdTech Learner Help',
+    scenario: 'Students ask recurring doubts on deadlines, payments, and technical access from different channels.',
+    outcome: 'Persistent memory keeps history unified so support remains personalized and consistent.'
   }
 ];
 
@@ -85,6 +103,28 @@ function About({ onNavigate }) {
                   ) : null}
                   {!member.linkedin && !member.email && !member.github ? <span>No public links yet.</span> : null}
                 </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="about-page-card">
+          <h2>Use Case Scenarios</h2>
+          <p>
+            Hindsight Expert is designed for real support workflows where context continuity, speed, and clarity are
+            critical.
+          </p>
+
+          <div className="about-usecase-grid">
+            {useCases.map((item) => (
+              <article className="about-usecase-card" key={item.title}>
+                <h3>{item.title}</h3>
+                <p>
+                  <strong>Scenario:</strong> {item.scenario}
+                </p>
+                <p>
+                  <strong>Outcome:</strong> {item.outcome}
+                </p>
               </article>
             ))}
           </div>

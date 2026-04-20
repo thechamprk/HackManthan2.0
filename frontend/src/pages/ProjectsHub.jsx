@@ -48,6 +48,18 @@ export default function ProjectsHub() {
         <ThemeToggle />
       </header>
 
+      <section className={styles['hub-intro']}>
+        <p>
+          A focused workspace to plan projects, generate AI to-dos, track onboarding continuity, and run deep
+          product search.
+        </p>
+        <div className={styles['hub-chips']}>
+          <span>{projects.length} modules</span>
+          <span>Click any tile to start</span>
+          <span>Context-aware flow</span>
+        </div>
+      </section>
+
       <div className={styles['tiles-grid']}>
         {projects.map((project) => (
           <ProjectTile

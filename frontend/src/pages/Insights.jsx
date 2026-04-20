@@ -20,6 +20,11 @@ function Insights({ search, onNavigate }) {
   const [deepSummary, setDeepSummary] = useState(null);
   const [error, setError] = useState('');
 
+  const totalProjects = projects.length;
+  const totalTodos = todoResult?.tasks?.length || 0;
+  const totalGrants = grants.length;
+  const hasDeepSummary = Boolean(deepSummary?.summary);
+
   useEffect(() => {
     let mounted = true;
     async function loadProjects() {
@@ -129,11 +134,29 @@ function Insights({ search, onNavigate }) {
       </header>
 
       <main className="app-main">
+        <section className="insights-overview">
+          <div>
+            <p className="workspace-kicker">Execution Intelligence</p>
+            <h2>Keep projects, tasks, and research aligned in one flow</h2>
+            <p>
+              Build projects, generate structured to-dos, continue onboarding, and run deep search from a single
+              workspace.
+            </p>
+          </div>
+          <div className="insights-overview-meta">
+            <span className="insight-chip">Projects: {totalProjects}</span>
+            <span className="insight-chip">AI Tasks: {totalTodos}</span>
+            <span className="insight-chip">Grants: {totalGrants}</span>
+            <span className="insight-chip">Deep Search: {hasDeepSummary ? 'Ready' : 'Pending'}</span>
+          </div>
+        </section>
+
         {error ? <p className="muted">Error: {error}</p> : null}
 
         <section className="insights-grid">
           <article className="insights-card">
-            <h3>1) Project HUB (execution)</h3>
+            <h3>1) Project HUB</h3>
+            <p className="insights-sub">Create and manage execution-focused projects.</p>
             <form onSubmit={createNewProject} className="insights-form">
               <input
                 value={projectName}
@@ -164,7 +187,8 @@ function Insights({ search, onNavigate }) {
           </article>
 
           <article className="insights-card">
-            <h3>2) AI To-Do engine (structure)</h3>
+            <h3>2) AI To-Do Engine</h3>
+            <p className="insights-sub">Generate clear, actionable tasks for selected projects.</p>
             <div className="insights-form">
               <input
                 value={todoContext}
@@ -186,7 +210,8 @@ function Insights({ search, onNavigate }) {
           </article>
 
           <article className="insights-card">
-            <h3>3) Grant + onboarding (continuation)</h3>
+            <h3>3) Grants + Onboarding</h3>
+            <p className="insights-sub">Explore funding and continue onboarding without context loss.</p>
             <div className="insights-form">
               <input
                 value={grantQuery}
@@ -222,7 +247,8 @@ function Insights({ search, onNavigate }) {
           </article>
 
           <article className="insights-card">
-            <h3>4) Deep Search (product thinking)</h3>
+            <h3>4) Deep Search</h3>
+            <p className="insights-sub">Run focused product research and summarize recommendations.</p>
             <div className="insights-form">
               <input
                 value={deepQuery}
