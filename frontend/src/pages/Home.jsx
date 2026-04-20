@@ -38,6 +38,31 @@ function Home({ search, onNavigate }) {
       </header>
 
       <main className="app-main">
+        <section className="workspace-hero">
+          <div className="workspace-hero-main">
+            <p className="workspace-kicker">Customer Workspace</p>
+            <h2>Elegant AI support operations for every conversation</h2>
+            <p>
+              Conversations are now persisted and auto-grouped by topic, so account, billing, and technical chats stay
+              neatly organized.
+            </p>
+          </div>
+          <div className="workspace-hero-metrics">
+            <article>
+              <strong>Smart Threads</strong>
+              <span>Topic-based grouping</span>
+            </article>
+            <article>
+              <strong>Persistent History</strong>
+              <span>Per-customer chat memory</span>
+            </article>
+            <article>
+              <strong>Context Aware</strong>
+              <span>Active memory by conversation</span>
+            </article>
+          </div>
+        </section>
+
         <ChatInterface customerId={customerId} />
         <Analytics />
       </main>
