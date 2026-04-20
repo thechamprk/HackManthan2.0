@@ -157,7 +157,18 @@ footer { padding:1.5rem 2.5rem; text-align:center; border-top:1px solid #e8e8e8;
 
 /* App pages keep simple elegant */
 .app-shell {
-  background: radial-gradient(1200px 600px at 90% -20%, rgba(43, 79, 255, 0.08), transparent 60%), var(--bg);
+  --shell-glow-width: 1200px;
+  --shell-glow-height: 600px;
+  --shell-glow-pos-x: 90%;
+  --shell-glow-pos-y: -20%;
+  --shell-glow-color: rgba(43, 79, 255, 0.08);
+  --shell-glow-fade: 60%;
+  background: radial-gradient(
+      var(--shell-glow-width) var(--shell-glow-height) at var(--shell-glow-pos-x) var(--shell-glow-pos-y),
+      var(--shell-glow-color),
+      transparent var(--shell-glow-fade)
+    ),
+    var(--bg);
   min-height: 100vh;
 }
 .app-header {

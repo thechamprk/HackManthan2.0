@@ -33,6 +33,21 @@ const TOPIC_RULES = [
     keywords: ['feature', 'improve', 'enhancement', 'add', 'request', 'roadmap']
   }
 ];
+const MAX_CONVERSATION_TITLE_LENGTH = 48;
+const DEFAULT_TOPIC = { key: 'general', label: 'General Support' };
+
+function createConversationId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `c_${crypto.randomUUID()}`;
+  }
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    const randomHex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+    return `c_${randomHex}`;
+  }
+  return `c_${Date.now()}_${Math.random().toString(36).slice(2, 12)}_${Math.random().toString(36).slice(2, 12)}`;
+}
 
 function inferTopic(message) {
   const text = String(message || '').toLowerCase();
@@ -41,25 +56,27 @@ function inferTopic(message) {
       return { key: rule.key, label: rule.label };
     }
   }
-  return { key: 'general', label: 'General Support' };
+  return DEFAULT_TOPIC;
 }
 
-function createConversation(topic = { key: 'general', label: 'General Support' }, title = 'New conversation') {
-  return {
-    id: `c_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+function createConversation(topic = DEFAULT_TOPIC, title = 'New conversation') {
+  return normalizeConversation({
+    id: createConversationId(),
     title,
     topicKey: topic.key,
     topicLabel: topic.label,
     messages: [],
     lastMetadata: null,
     updatedAt: new Date().toISOString()
-  };
+  });
 }
 
 function buildConversationTitle(message) {
   const clean = String(message || '').trim().replace(/\s+/g, ' ');
   if (!clean) return 'New conversation';
-  return clean.length > 48 ? `${clean.slice(0, 48)}…` : clean;
+  return clean.length > MAX_CONVERSATION_TITLE_LENGTH
+    ? `${clean.slice(0, MAX_CONVERSATION_TITLE_LENGTH)}…`
+    : clean;
 }
 
 function toConversationContext(messages = []) {
@@ -71,6 +88,37 @@ function toConversationContext(messages = []) {
 
 function sortByLatest(conversations = []) {
   return [...conversations].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+}
+
+function normalizeConversation(thread = {}) {
+  return {
+    id: thread.id || createConversationId(),
+    title: thread.title || 'Conversation',
+    topicKey: thread.topicKey || DEFAULT_TOPIC.key,
+    topicLabel: thread.topicLabel || DEFAULT_TOPIC.label,
+    messages: Array.isArray(thread.messages) ? thread.messages : [],
+    lastMetadata: thread.lastMetadata || null,
+    updatedAt: thread.updatedAt || new Date().toISOString()
+  };
+}
+
+function resolveTargetConversation(activeThread, allThreads, topic, cleanContent) {
+  if (!activeThread) {
+    const starter = createConversation(topic, buildConversationTitle(cleanContent));
+    return { targetConversation: starter, shouldInsert: true };
+  }
+
+  if (activeThread.messages.length > 0 && activeThread.topicKey !== topic.key) {
+    const matchingTopicConversation = allThreads.find((thread) => thread.topicKey === topic.key);
+    if (matchingTopicConversation) {
+      return { targetConversation: matchingTopicConversation, shouldInsert: false };
+    }
+
+    const topicThread = createConversation(topic, buildConversationTitle(cleanContent));
+    return { targetConversation: topicThread, shouldInsert: true };
+  }
+
+  return { targetConversation: activeThread, shouldInsert: false };
 }
 
 function ChatInterface({ customerId }) {
@@ -99,19 +147,15 @@ function ChatInterface({ customerId }) {
         return;
       }
 
-      const normalized = sortByLatest(parsed).map((thread) => ({
-        id: thread.id || `c_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-        title: thread.title || 'Conversation',
-        topicKey: thread.topicKey || 'general',
-        topicLabel: thread.topicLabel || 'General Support',
-        messages: Array.isArray(thread.messages) ? thread.messages : [],
-        lastMetadata: thread.lastMetadata || null,
-        updatedAt: thread.updatedAt || new Date().toISOString()
-      }));
+      const normalized = sortByLatest(parsed).map((thread) => normalizeConversation(thread));
 
       setConversations(normalized);
       setActiveConversationId(normalized[0].id);
-    } catch {
+    } catch (error) {
+      console.warn(
+        'Failed to parse chat history from localStorage. Resetting to a new conversation.',
+        error
+      );
       const starter = createConversation();
       setConversations([starter]);
       setActiveConversationId(starter.id);
@@ -123,26 +167,33 @@ function ChatInterface({ customerId }) {
     localStorage.setItem(storageKey, JSON.stringify(conversations));
   }, [conversations, storageKey]);
 
+  useEffect(() => {
+    if (!conversations.length) return;
+    const hasValidActive = conversations.some((thread) => thread.id === activeConversationId);
+    if (!hasValidActive) {
+      setActiveConversationId(conversations[0].id);
+    }
+  }, [activeConversationId, conversations]);
+
   const activeConversation = useMemo(
-    () => conversations.find((thread) => thread.id === activeConversationId) || conversations[0] || null,
+    () => conversations.find((thread) => thread.id === activeConversationId) || null,
     [activeConversationId, conversations]
   );
   const activeMessages = activeConversation?.messages || [];
 
   function updateConversation(conversationId, updater) {
-    setConversations((prev) =>
-      sortByLatest(
-        prev.map((thread) => {
-          if (thread.id !== conversationId) return thread;
-          return updater(thread);
-        })
-      )
-    );
+    setConversations((prev) => {
+      const existingThread = prev.find((thread) => thread.id === conversationId);
+      if (!existingThread) return prev;
+      const updatedThread = updater(existingThread);
+      const remaining = prev.filter((thread) => thread.id !== conversationId);
+      return [updatedThread, ...remaining];
+    });
   }
 
   function createNewConversation() {
     const thread = createConversation();
-    setConversations((prev) => sortByLatest([thread, ...prev]));
+    setConversations((prev) => [thread, ...prev]);
     setActiveConversationId(thread.id);
     setMessage('');
   }
@@ -159,25 +210,16 @@ function ChatInterface({ customerId }) {
       timestamp: new Date().toISOString()
     };
 
-    let targetConversation = activeConversation;
-    let targetConversationId = activeConversation?.id || '';
+    const { targetConversation, shouldInsert } = resolveTargetConversation(
+      activeConversation,
+      conversations,
+      topic,
+      cleanContent
+    );
+    const targetConversationId = targetConversation.id;
 
-    if (!targetConversation) {
-      const starter = createConversation(topic, buildConversationTitle(cleanContent));
-      setConversations((prev) => sortByLatest([starter, ...prev]));
-      targetConversation = starter;
-      targetConversationId = starter.id;
-    } else if (targetConversation.messages.length > 0 && targetConversation.topicKey !== topic.key) {
-      const matchingTopicConversation = conversations.find((thread) => thread.topicKey === topic.key);
-      if (matchingTopicConversation) {
-        targetConversation = matchingTopicConversation;
-        targetConversationId = matchingTopicConversation.id;
-      } else {
-        const topicThread = createConversation(topic, buildConversationTitle(cleanContent));
-        setConversations((prev) => sortByLatest([topicThread, ...prev]));
-        targetConversation = topicThread;
-        targetConversationId = topicThread.id;
-      }
+    if (shouldInsert) {
+      setConversations((prev) => [targetConversation, ...prev]);
     }
 
     setActiveConversationId(targetConversationId);
