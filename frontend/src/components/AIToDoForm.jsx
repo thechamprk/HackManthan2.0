@@ -1,35 +1,181 @@
 import React, { useState } from 'react';
 
-export default function AIToDoForm() {
-  const [expandedItem, setExpandedItem] = useState(null);
+const getNextTaskId = (items) => items.reduce((maxId, task) => Math.max(maxId, task.id), 0) + 1;
 
-  const items = [
+export default function AIToDoForm() {
+  const moduleOptions = [
+    'Project HUB',
+    'AI To-Do Engine',
+    'Grants + Onboarding',
+    'Deep Search'
+  ];
+
+  const initialTasks = [
     {
       id: 1,
-      title: 'Generate an image',
-      description: 'Generate visual representation of project'
+      title: 'Finalize sprint plan',
+      description: 'Prepare week-wise milestones for project execution.',
+      module: 'Project HUB',
+      status: 'pending',
+      progressNote: ''
     },
     {
       id: 2,
-      title: 'Structure AI task map',
-      description: 'Convert input context into categorized tasks: Generate an image'
-    },
-    {
-      id: 3,
-      title: 'Prepare grant continuity checklist',
-      description: 'Document grant-readiness artifacts for 4 week timeline.'
-    },
-    {
-      id: 4,
-      title: 'Run deep search synthesis',
-      description: 'Summarize prior support trends: latest dominant issue type is'
+      title: 'Research competitor rollout',
+      description: 'Run deep search and collect launch insights.',
+      module: 'Deep Search',
+      status: 'in_progress',
+      progressNote: 'Initial competitor list has been prepared.'
     }
   ];
 
+  const [tasks, setTasks] = useState(initialTasks);
+  const [newTask, setNewTask] = useState({
+    title: '',
+    description: '',
+    module: moduleOptions[0]
+  });
+  const [nextTaskId, setNextTaskId] = useState(() => getNextTaskId(initialTasks));
+  const [formError, setFormError] = useState('');
+  const [deleteCandidateId, setDeleteCandidateId] = useState(null);
+
+  const statusLabels = {
+    pending: 'Pending',
+    in_progress: 'In Progress',
+    completed: 'Completed'
+  };
+
+  const counts = tasks.reduce(
+    (acc, task) => ({ ...acc, [task.status]: acc[task.status] + 1 }),
+    { pending: 0, in_progress: 0, completed: 0 }
+  );
+
+  const handleCreateTask = (event) => {
+    event.preventDefault();
+    const title = newTask.title.trim();
+    const description = newTask.description.trim();
+    if (!title || !description) {
+      setFormError('Please add both task title and description.');
+      return;
+    }
+    setFormError('');
+
+    setTasks((prev) => [
+      ...prev,
+      {
+        id: nextTaskId,
+        title,
+        description,
+        module: newTask.module,
+        status: 'pending',
+        progressNote: ''
+      }
+    ]);
+    setNextTaskId((prev) => prev + 1);
+    setNewTask({
+      title: '',
+      description: '',
+      module: moduleOptions[0]
+    });
+  };
+
+  const handleDeleteTask = (id) => {
+    if (deleteCandidateId === id) {
+      setTasks((prev) => prev.filter((task) => task.id !== id));
+      setDeleteCandidateId(null);
+      return;
+    }
+
+    setDeleteCandidateId(id);
+  };
+
+  const handleStatusChange = (id, status) => {
+    setTasks((prev) => prev.map((task) => (task.id === id ? { ...task, status } : task)));
+  };
+
+  const handleProgressNoteChange = (id, progressNote) => {
+    setTasks((prev) => prev.map((task) => (task.id === id ? { ...task, progressNote } : task)));
+  };
+
   return (
     <div>
-      <div style={{ marginBottom: '2rem' }}>
+      <form onSubmit={handleCreateTask} style={{ marginBottom: '1.5rem' }}>
+        <h3 style={{ marginBottom: '1rem', color: '#0f172a' }}>Create a task from available options</h3>
+        <div style={{ marginBottom: '0.75rem' }}>
+          <label htmlFor="task-title" style={{ display: 'block', marginBottom: '0.35rem', color: '#334155', fontSize: '0.85rem' }}>
+            Task title
+          </label>
+          <input
+            id="task-title"
+            type="text"
+            placeholder="Task title"
+            value={newTask.title}
+            onChange={(event) => {
+              setNewTask((prev) => ({ ...prev, title: event.target.value }));
+              setFormError('');
+            }}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              border: '1px solid #e2e8f0',
+              borderRadius: '8px',
+              fontSize: '0.95rem'
+            }}
+          />
+        </div>
+        <div style={{ marginBottom: '0.75rem' }}>
+          <label htmlFor="task-description" style={{ display: 'block', marginBottom: '0.35rem', color: '#334155', fontSize: '0.85rem' }}>
+            Task description
+          </label>
+          <textarea
+            id="task-description"
+            placeholder="Short description"
+            value={newTask.description}
+            onChange={(event) => {
+              setNewTask((prev) => ({ ...prev, description: event.target.value }));
+              setFormError('');
+            }}
+            rows="3"
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              border: '1px solid #e2e8f0',
+              borderRadius: '8px',
+              fontSize: '0.95rem',
+              fontFamily: 'inherit',
+              resize: 'vertical'
+            }}
+          />
+        </div>
+        <div style={{ marginBottom: '1rem' }}>
+          <label htmlFor="task-module" style={{ display: 'block', marginBottom: '0.35rem', color: '#334155', fontSize: '0.85rem' }}>
+            Option
+          </label>
+          <select
+            id="task-module"
+            value={newTask.module}
+            onChange={(event) => setNewTask((prev) => ({ ...prev, module: event.target.value }))}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              border: '1px solid #e2e8f0',
+              borderRadius: '8px',
+              fontSize: '0.95rem',
+              background: '#ffffff'
+            }}
+          >
+            {moduleOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </div>
+        {formError ? (
+          <p style={{ marginBottom: '0.75rem', color: '#b91c1c', fontSize: '0.85rem' }}>{formError}</p>
+        ) : null}
         <button
+          type="submit"
           style={{
             width: '100%',
             padding: '0.75rem 1.5rem',
@@ -42,58 +188,123 @@ export default function AIToDoForm() {
             fontSize: '1rem'
           }}
         >
-          Generate To-Dos
+          Create Task
         </button>
+      </form>
+
+      <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+        <span style={{ background: '#f8fafc', borderRadius: '999px', padding: '0.4rem 0.75rem', fontSize: '0.85rem' }}>
+          Pending: <strong>{counts.pending}</strong>
+        </span>
+        <span style={{ background: '#eff6ff', borderRadius: '999px', padding: '0.4rem 0.75rem', fontSize: '0.85rem' }}>
+          In Progress: <strong>{counts.in_progress}</strong>
+        </span>
+        <span style={{ background: '#f0fdf4', borderRadius: '999px', padding: '0.4rem 0.75rem', fontSize: '0.85rem' }}>
+          Completed: <strong>{counts.completed}</strong>
+        </span>
       </div>
 
       <div>
-        <h3 style={{ marginBottom: '1rem', color: '#0f172a' }}>Structure AI task map</h3>
-        {items.map((item) => (
-          <div
-            key={item.id}
-            style={{
-              marginBottom: '0.75rem',
-              border: '1px solid #e2e8f0',
-              borderRadius: '8px',
-              overflow: 'hidden'
-            }}
-          >
-            <button
-              onClick={() => setExpandedItem(expandedItem === item.id ? null : item.id)}
+        <h3 style={{ marginBottom: '1rem', color: '#0f172a' }}>Assigned tasks</h3>
+        {tasks.length === 0 ? (
+          <p style={{ color: '#64748b' }}>No tasks assigned yet.</p>
+        ) : (
+          tasks.map((task) => (
+            <div
+              key={task.id}
               style={{
-                width: '100%',
+                marginBottom: '1rem',
+                border: '1px solid #e2e8f0',
+                borderRadius: '8px',
                 padding: '1rem',
-                background: expandedItem === item.id ? '#f0f9ff' : '#ffffff',
-                border: 'none',
-                textAlign: 'left',
-                cursor: 'pointer',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                fontWeight: '600',
-                color: '#0f172a',
-                fontSize: '0.95rem'
+                background: '#ffffff'
               }}
             >
-              <span>{item.title}</span>
-              <span>{expandedItem === item.id ? '▼' : '▶'}</span>
-            </button>
-            {expandedItem === item.id && (
               <div
                 style={{
-                  padding: '1rem',
-                  background: '#f8fafc',
-                  borderTop: '1px solid #e2e8f0',
-                  color: '#64748b',
-                  fontSize: '0.95rem',
-                  lineHeight: '1.5'
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: '1rem',
+                  marginBottom: '0.75rem'
                 }}
               >
-                {item.description}
+                <div>
+                  <strong style={{ color: '#0f172a', fontSize: '0.95rem' }}>{task.title}</strong>
+                  <p style={{ color: '#64748b', marginTop: '0.3rem', fontSize: '0.9rem' }}>{task.description}</p>
+                  <p style={{ color: '#334155', marginTop: '0.35rem', fontSize: '0.85rem' }}>
+                    Option: <strong>{task.module}</strong>
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteTask(task.id)}
+                  style={{
+                    padding: '0.5rem 0.75rem',
+                    borderRadius: '6px',
+                    border: '1px solid #fecaca',
+                    background: '#fef2f2',
+                    color: '#b91c1c',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {deleteCandidateId === task.id ? 'Confirm delete' : 'Delete'}
+                </button>
               </div>
-            )}
-          </div>
-        ))}
+              {deleteCandidateId === task.id ? (
+                <p style={{ margin: '0 0 0.75rem 0', color: '#b45309', fontSize: '0.8rem' }}>
+                  Click &quot;Confirm delete&quot; to remove this task.
+                </p>
+              ) : null}
+
+              <div style={{ marginBottom: '0.75rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.35rem', color: '#334155', fontSize: '0.85rem' }}>
+                  Progress status
+                </label>
+                <select
+                  value={task.status}
+                  onChange={(event) => handleStatusChange(task.id, event.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.55rem',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '6px',
+                    fontSize: '0.9rem',
+                    background: '#ffffff'
+                  }}
+                >
+                  {Object.entries(statusLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.35rem', color: '#334155', fontSize: '0.85rem' }}>
+                  Progress note
+                </label>
+                <textarea
+                  value={task.progressNote}
+                  onChange={(event) => handleProgressNoteChange(task.id, event.target.value)}
+                  rows="2"
+                  placeholder="Add latest progress update..."
+                  style={{
+                    width: '100%',
+                    padding: '0.55rem',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '6px',
+                    fontSize: '0.9rem',
+                    fontFamily: 'inherit',
+                    resize: 'vertical'
+                  }}
+                />
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

@@ -25,7 +25,7 @@ export default function ProjectTile({
       <div className={styles['tile-icon']}>{icon}</div>
       <h3>{title}</h3>
       <p>{description}</p>
-      <span className={styles['tile-action']}>Open →</span>
+      <span className={styles['tile-action']}>Create →</span>
     </div>
   );
 }

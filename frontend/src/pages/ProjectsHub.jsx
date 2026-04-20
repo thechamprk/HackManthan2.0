@@ -15,25 +15,25 @@ export default function ProjectsHub() {
     {
       id: 'hub',
       title: '📦 Project HUB',
-      description: 'Create and manage project execution with detailed planning',
+      description: 'Click to create a project, define goals, and start execution planning.',
       icon: '📦'
     },
     {
       id: 'ai-todo',
       title: '🤖 AI To-Do Engine',
-      description: 'Generate structured task maps and action items',
+      description: 'Click to create tasks, assign work, track progress, and remove completed items.',
       icon: '🤖'
     },
     {
       id: 'grants',
       title: '📋 Grants + Onboarding',
-      description: 'Manage grants and track onboarding progress',
+      description: 'Click to create grant and onboarding actions with continuity checkpoints.',
       icon: '📋'
     },
     {
       id: 'search',
       title: '🔍 Deep Search',
-      description: 'Advanced product research and analysis',
+      description: 'Click to create deep-research prompts and capture insights for product decisions.',
       icon: '🔍'
     }
   ];
